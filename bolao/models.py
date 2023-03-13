@@ -34,11 +34,11 @@ class Time(BaseModel):
 
 class Jogo(BaseModel):
 
-    id_externo = models.CharField('ID externo', max_length=50) 
+    id_externo = models.CharField('ID externo', max_length=50)
     time_casa = models.ForeignKey(Time, verbose_name="Time casa", on_delete=models.CASCADE,
-                                 related_name='jogos_casa')
+                                  related_name='jogos_casa')
     time_fora = models.ForeignKey(Time, verbose_name="Time fora", on_delete=models.CASCADE,
-                                 related_name='jogos_fora')
+                                  related_name='jogos_fora')
     status = models.CharField('Status', max_length=50)
     data = models.DateTimeField('Data')
     placar_casa = models.IntegerField('Placar casa', null=True, blank=True)
@@ -54,7 +54,7 @@ class Jogo(BaseModel):
     @property
     def placar(self):
         if self.placar_casa and self.placar_fora:
-            return  f'{self.time_casa} {self.placar_casa} vs {self.placar_fora} {self.time_fora}'
+            return f'{self.time_casa} {self.placar_casa} vs {self.placar_fora} {self.time_fora}'
         return str(self)
 
     def __str__(self):
