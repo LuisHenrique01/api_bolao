@@ -67,7 +67,7 @@ class Carteira(BaseModel):
     @property
     def saldo(self):
         return self.__saldo
-    
+
     def transferir(self, valor: Decimal) -> bool:
         raise NotImplementedError(f'Transferência de {valor} R$ não for realizada.')
 
