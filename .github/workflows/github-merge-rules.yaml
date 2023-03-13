@@ -21,5 +21,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Flake8 Lint Check
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
         run: |
           flake8 --config=.flake8
