@@ -22,7 +22,7 @@ class API:
                                  "x-rapidapi-key": os.getenv('KEY_FOOTBALL_DATA')})
 
     @staticmethod
-    def get_current(seasons):
+    def get_current(seasons: List[dict]) -> str:
         for season in seasons:
             if season['current']:
                 return str(season['year'])
@@ -58,7 +58,9 @@ class API:
                     temporada_atual=temporada_atual
                 ))
 
-            Campeonato.objects.bulk_create(campeonatos)
+            Campeonato.objects.bulk_create(campeonatos, update_conflicts=True,
+                                           update_fields=['temporada_atual', 'logo'],
+                                           unique_fields=['id_externo'])
             return True
         if cls.api_using == 'RAPID_API':
             return False
@@ -110,7 +112,7 @@ class API:
         return cls.buscar_e_salvar_competicoes()
 
     @classmethod
-    def buscar_e_salvar_jogos(cls, campeonatos: List[Campeonato]):
+    def buscar_e_salvar_jogos(cls, campeonatos: List[Campeonato]) -> bool:
         for campeonato in campeonatos:
             jogos = cls.buscar_jogos(campeonato)
             for jogo in jogos:
@@ -122,7 +124,7 @@ class API:
         return time
 
     @staticmethod
-    def obter_vencedor(placar_casa, placar_fora):
+    def obter_vencedor(placar_casa: int, placar_fora: int) -> str:
         if placar_casa is None and placar_fora is None:
             return None
         elif placar_casa > placar_fora:
@@ -133,7 +135,7 @@ class API:
             return VENCEDOR_CHOICES['EMPATE']
 
     @classmethod
-    def update_game_results(cls, game: Jogo):
+    def update_game_results(cls, game: Jogo) -> bool:
         response = requests.get(cls.url + f'fixtures?id={game.id_externo}', headers=cls.headers)
         if response.status_code == 200:
             data = response.json()["response"][0]

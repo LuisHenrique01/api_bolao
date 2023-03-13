@@ -9,7 +9,7 @@ class Campeonato(BaseModel):
     nome = models.CharField("Nome", max_length=75)
     pais = models.CharField('País', max_length=75)
     tipo = models.CharField('Tipo', max_length=75, null=True, blank=True)
-    id_externo = models.CharField('ID externo', max_length=25, null=True, blank=True)
+    id_externo = models.CharField('ID externo', max_length=25, null=True, blank=True, unique=True)
     logo = models.URLField('Logo', null=True, blank=True)
     ativo = models.BooleanField("Ativo", default=True)
     temporada_atual = models.CharField('Temporada', max_length=75)
@@ -17,6 +17,7 @@ class Campeonato(BaseModel):
     class Meta:
         verbose_name = "Campeonato"
         verbose_name_plural = "Campeonatos"
+        ordering = ['ativo', 'nome']
 
     def __str__(self):
         return self.nome
@@ -24,9 +25,14 @@ class Campeonato(BaseModel):
 
 class Time(BaseModel):
 
-    id_externo = models.CharField('ID externo', max_length=50)
+    id_externo = models.CharField('ID externo', max_length=50, unique=True)
     nome = models.CharField('Nome', max_length=50)
     logo = models.URLField('Logo', max_length=200)
+
+    class Meta:
+        verbose_name = "Time"
+        verbose_name_plural = "Times"
+        ordering = ['nome']
 
     def __str__(self) -> str:
         return self.nome
@@ -34,7 +40,7 @@ class Time(BaseModel):
 
 class Jogo(BaseModel):
 
-    id_externo = models.CharField('ID externo', max_length=50)
+    id_externo = models.CharField('ID externo', max_length=50, unique=True)
     time_casa = models.ForeignKey(Time, verbose_name="Time casa", on_delete=models.CASCADE,
                                   related_name='jogos_casa')
     time_fora = models.ForeignKey(Time, verbose_name="Time fora", on_delete=models.CASCADE,
@@ -50,6 +56,7 @@ class Jogo(BaseModel):
     class Meta:
         verbose_name = "Jogo"
         verbose_name_plural = "Jogos"
+        ordering = ['-data', 'status']
 
     @property
     def placar(self):

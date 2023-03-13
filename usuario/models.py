@@ -21,7 +21,7 @@ class PermissoesNotificacao(BaseModel):
         verbose_name = "Pemissão para notificação"
         verbose_name_plural = "Pemissões para notificações"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'SMS: {self.sms}|E-mail: {self.email}'
 
 
@@ -39,7 +39,7 @@ class Endereco(BaseModel):
         verbose_name = "Endereço"
         verbose_name_plural = "Endereços"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'CEP: {self.cep}|Cidade: {self.cidade}'
 
 
@@ -54,12 +54,12 @@ class Carteira(BaseModel):
     def deposito_valido(self, valor: Decimal) -> bool:
         return valor >= Decimal(os.getenv('MIN_DEPOSITO'))
 
-    def saque(self, valor: Decimal):
+    def saque(self, valor: Decimal) -> None:
         if not self.saque_valido(valor):
             raise SaldoInvalidoException()
         self.__saldo -= valor
 
-    def depositar(self, valor: Decimal):
+    def depositar(self, valor: Decimal) -> None:
         if not self.deposito_valido(valor):
             raise DepositoInvalidoException()
         self.__saldo += valor
@@ -104,11 +104,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         return getattr(self.permissoes, tipo, False)
 
     @property
-    def cpf(self):
+    def cpf_formatado(self) -> str:
         return f'{self.cpf[:3:]}.{self.cpf[3:6:]}.{self.cpf[6:9:]}-{self.cpf[9::]}'
 
     @property
-    def telefone(self):
+    def telefone_formatado(self) -> str:
         return f'({self.telefone[:2:]}) {self.telefone[2:7:]}-{self.telefone[7::]}'
 
     def __str__(self) -> str:
