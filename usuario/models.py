@@ -89,6 +89,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, related_name='usuarios')
     permissoes = models.ForeignKey(PermissoesNotificacao, on_delete=models.SET_NULL, null=True, related_name='usuarios')
     carteira = models.OneToOneField(Carteira, on_delete=models.CASCADE)
+    is_staff = models.BooleanField(default=False)
 
     objects = UserManager()
 
@@ -101,6 +102,14 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def envioNotificacaoValido(self, tipo: str) -> bool:
         return getattr(self.permissoes, tipo, False)
+
+    @property
+    def cpf(self):
+        return f'{self.cpf[:3:]}.{self.cpf[3:6:]}.{self.cpf[6:9:]}-{self.cpf[9::]}'
+
+    @property
+    def telefone(self):
+        return f'({self.telefone[:2:]}) {self.telefone[2:7:]}-{self.telefone[7::]}'
 
     def __str__(self) -> str:
         _nome = self.nome.split()
