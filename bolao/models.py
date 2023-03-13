@@ -10,7 +10,7 @@ class Campeonato(BaseModel):
     pais = models.CharField('País', max_length=75)
     tipo = models.CharField('Tipo', max_length=75, null=True, blank=True)
     id_externo = models.CharField('ID externo', max_length=25, null=True, blank=True)
-    logo = models.URLField(validators='Logo', null=True, blank=True)
+    logo = models.URLField('Logo', null=True, blank=True)
     ativo = models.BooleanField("Ativo", default=True)
     temporada_atual = models.CharField('Temporada', max_length=75)
 
@@ -43,7 +43,7 @@ class Jogo(BaseModel):
     data = models.DateTimeField('Data')
     placar_casa = models.IntegerField('Placar casa', null=True, blank=True)
     placar_fora = models.IntegerField('Placar Fora', null=True, blank=True)
-    vencedor = models.CharField(max_length=5, choices=VENCEDOR_CHOICES.items(), null=True, blank=True)
+    vencedor = models.CharField(max_length=6, choices=VENCEDOR_CHOICES.items(), null=True, blank=True)
     campeonato = models.ForeignKey(Campeonato, verbose_name='Campeonato',
                                    on_delete=models.PROTECT, related_name='jogos')
 
