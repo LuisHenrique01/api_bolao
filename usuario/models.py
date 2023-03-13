@@ -49,16 +49,16 @@ class Carteira(BaseModel):
 
     def saque_valido(self, valor: Decimal) -> bool:
         return valor >= Decimal(os.getenv('MIN_SAQUE')) and (self.saldo - valor) >= 0
-    
+
     @classmethod
     def deposito_valido(self, valor: Decimal) -> bool:
         return valor >= Decimal(os.getenv('MIN_DEPOSITO'))
-    
+
     def saque(self, valor: Decimal):
         if not self.saque_valido(valor):
             raise SaldoInvalidoException()
         self.__saldo -= valor
-    
+
     def depositar(self, valor: Decimal):
         if not self.deposito_valido(valor):
             raise DepositoInvalidoException()

@@ -133,5 +133,3 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Para rodar a psycopg2
 # sudo apt install libpq-dev
-# #MinhaSenha01
-# 6ZnuenTxKv2UAma

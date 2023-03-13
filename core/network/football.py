@@ -1,11 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 import os
+from typing import List
 import requests
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 
 from bolao import VENCEDOR_CHOICES
 from bolao.models import Campeonato, Jogo, Time
+
 
 class API:
     api_using = 'IO'
@@ -64,7 +66,7 @@ class API:
         return cls.buscar_e_salvar_competicoes()
 
     @classmethod
-    def salvar_jogo(cls, jogo, campeonato):
+    def salvar_jogo(cls, jogo: dict, campeonato: Campeonato) -> Jogo:
         time_casa = cls.salvar_time(jogo["teams"]["home"]["name"], jogo["league"]["country"])
         time_fora = cls.salvar_time(jogo["teams"]["away"]["name"], jogo["league"]["country"])
 
@@ -75,7 +77,7 @@ class API:
         placar_fora = jogo["goals"]["away"]
         vencedor = cls.obter_vencedor(placar_casa, placar_fora)
 
-        jogo, _ = Jogo.objects.update_or_create(
+        new_jogo, _ = Jogo.objects.update_or_create(
             id_externo=id_externo,
             defaults={
                 "time_casa": time_casa,
@@ -88,13 +90,16 @@ class API:
                 "campeonato": campeonato,
             }
         )
-        return jogo
+        return new_jogo
 
     @classmethod
-    def buscar_jogos(cls, campeonato):
+    def buscar_jogos(cls, campeonato: Campeonato):
+        today = date.today()
         parametros = {
             "season": campeonato.temporada_atual,
             "league": campeonato.id_externo,
+            "to": str(today),
+            "from": str(today + timedelta(days=int(os.getenv("DAYS_GET_JOGOS"))))
         }
         response = requests.get(cls.url + 'fixtures', headers=cls.headers, params=parametros)
         if response.status_code == 200:
@@ -105,7 +110,7 @@ class API:
         return cls.buscar_e_salvar_competicoes()
 
     @classmethod
-    def buscar_e_salvar_jogos(cls, campeonatos):
+    def buscar_e_salvar_jogos(cls, campeonatos: List[Campeonato]):
         for campeonato in campeonatos:
             jogos = cls.buscar_jogos(campeonato)
             for jogo in jogos:
@@ -115,7 +120,7 @@ class API:
     def salvar_time(cls, nome, pais):
         time, _ = Time.objects.get_or_create(nome=nome, pais=pais)
         return time
-    
+
     @staticmethod
     def obter_vencedor(placar_casa, placar_fora):
         if placar_casa is None and placar_fora is None:
@@ -144,4 +149,3 @@ class API:
             raise Exception(f"Failed to retrieve fixtures. Status code: {response.status_code}")
         cls.set_rapid_api()
         return cls.buscar_e_salvar_competicoes()
-
