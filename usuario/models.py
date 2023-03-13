@@ -12,7 +12,7 @@ from core.models import BaseModel
 from .managers import UserManager
 
 
-class PemissoesNotificacao(BaseModel):
+class PermissoesNotificacao(BaseModel):
 
     sms = models.BooleanField('SMS', default=True)
     email = models.BooleanField('E-mail', default=True)
@@ -45,7 +45,7 @@ class Endereco(BaseModel):
 
 class Carteira(BaseModel):
 
-    __saldo = models.DecimalField('Saldo', name='saldo', max_digits=9, decimal_places=2)
+    __saldo = models.DecimalField('Saldo', name='saldo', max_digits=9, decimal_places=2, default=Decimal(0))
 
     def saque_valido(self, valor: Decimal) -> bool:
         return valor >= Decimal(os.getenv('MIN_SAQUE')) and (self.saldo - valor) >= 0
@@ -87,13 +87,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     data_nascimento = models.DateField('Data de nascimento')
     telefone = models.CharField('Telefone', max_length=11)
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, related_name='usuarios')
-    permissoes = models.ForeignKey(PemissoesNotificacao, on_delete=models.SET_NULL, null=True, related_name='usuarios')
+    permissoes = models.ForeignKey(PermissoesNotificacao, on_delete=models.SET_NULL, null=True, related_name='usuarios')
     carteira = models.OneToOneField(Carteira, on_delete=models.CASCADE)
 
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['cpf', 'nome', 'data_nascimento', 'telefone', 'carteira']
 
     class Meta:
         verbose_name = 'Usuário'

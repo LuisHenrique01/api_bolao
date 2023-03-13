@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(auto_now=True, verbose_name='Atualizado em'),
         ),
         migrations.AddField(
-            model_name='pemissoesnotificacao',
+            model_name='PermissoesNotificacao',
             name='updated',
             field=models.DateTimeField(auto_now=True, verbose_name='Atualizado em'),
         ),
@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(auto_now_add=True, verbose_name='Criado em'),
         ),
         migrations.AlterField(
-            model_name='pemissoesnotificacao',
+            model_name='PermissoesNotificacao',
             name='created',
             field=models.DateTimeField(auto_now_add=True, verbose_name='Criado em'),
         ),

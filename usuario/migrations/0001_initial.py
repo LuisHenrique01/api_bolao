@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='PemissoesNotificacao',
+            name='PermissoesNotificacao',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('created', models.DateTimeField(auto_now=True, verbose_name='Atualizado em')),
@@ -72,7 +72,7 @@ class Migration(migrations.Migration):
                 ('carteira', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='usuario.carteira')),
                 ('endereco', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='usuarios', to='usuario.endereco')),
                 ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
-                ('permissoes', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='usuarios', to='usuario.pemissoesnotificacao')),
+                ('permissoes', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='usuarios', to='usuario.PermissoesNotificacao')),
                 ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
             ],
             options={
