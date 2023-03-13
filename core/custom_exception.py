@@ -19,4 +19,3 @@ class DepositoInvalidoException(BaseException):
     def __init__(self, message="Depósito inválido"):
         self.message = message
         super().__init__(self.message)
-

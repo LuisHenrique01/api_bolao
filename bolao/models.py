@@ -1,6 +1,7 @@
 from django.db import models
 
 from core.models import BaseModel
+from . import VENCEDOR_CHOICES
 
 
 class Campeonato(BaseModel):
@@ -34,15 +35,15 @@ class Time(BaseModel):
 class Jogo(BaseModel):
 
     id_externo = models.CharField('ID externo', max_length=50) 
-    timeCasa = models.ForeignKey(Time, verbose_name="Time casa", on_delete=models.CASCADE,
+    time_casa = models.ForeignKey(Time, verbose_name="Time casa", on_delete=models.CASCADE,
                                  related_name='jogos_casa')
-    timeFora = models.ForeignKey(Time, verbose_name="Time fora", on_delete=models.CASCADE,
+    time_fora = models.ForeignKey(Time, verbose_name="Time fora", on_delete=models.CASCADE,
                                  related_name='jogos_fora')
     status = models.CharField('Status', max_length=50)
     data = models.DateTimeField('Data')
-    placarCasa = models.IntegerField('Placar casa', null=True, blank=True)
-    placarFora = models.IntegerField('Placar Fora', null=True, blank=True)
-    vencedor = models.ForeignKey(Time, null=True, blank=True, related_name='jogos_vencedor')
+    placar_casa = models.IntegerField('Placar casa', null=True, blank=True)
+    placar_fora = models.IntegerField('Placar Fora', null=True, blank=True)
+    vencedor = models.CharField(max_length=5, choices=VENCEDOR_CHOICES.items(), null=True, blank=True)
     campeonato = models.ForeignKey(Campeonato, verbose_name='Campeonato',
                                    on_delete=models.PROTECT, related_name='jogos')
 
@@ -52,9 +53,9 @@ class Jogo(BaseModel):
 
     @property
     def placar(self):
-        if self.placarCasa and self.placarFora:
-            return  f'{self.timeCasa} {self.placarCasa} vs {self.placarFora} {self.timeFora}'
+        if self.placar_casa and self.placar_fora:
+            return  f'{self.time_casa} {self.placar_casa} vs {self.placar_fora} {self.time_fora}'
         return str(self)
 
     def __str__(self):
-        return f'{self.timeCasa} vs {self.timeFora}'
+        return f'{self.time_casa} vs {self.time_fora}'
