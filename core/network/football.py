@@ -1,9 +1,10 @@
 from datetime import datetime, date, timedelta
 import os
-from typing import List
+from typing import List, Union
 import requests
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from django.db.models import QuerySet
 
 from bolao import VENCEDOR_CHOICES
 from bolao.models import Campeonato, Jogo, Time
@@ -69,12 +70,14 @@ class API:
 
     @classmethod
     def salvar_jogo(cls, jogo: dict, campeonato: Campeonato) -> Jogo:
-        time_casa = cls.salvar_time(jogo["teams"]["home"]["name"], jogo["league"]["country"])
-        time_fora = cls.salvar_time(jogo["teams"]["away"]["name"], jogo["league"]["country"])
+        time_casa = cls.salvar_time(jogo["teams"]["home"]["id"], jogo["teams"]["home"]["name"],
+                                    jogo["teams"]["home"]["logo"])
+        time_fora = cls.salvar_time(jogo["teams"]["away"]["id"], jogo["teams"]["away"]["name"],
+                                    jogo["teams"]["away"]["logo"])
 
         id_externo = jogo["fixture"]["id"]
         status = jogo["fixture"]["status"]["short"]
-        data = datetime.strptime(jogo["fixture"]["date"], "%Y-%m-%dT%H:%M:%S+00:00")
+        data = datetime.strptime(jogo["fixture"]["date"], "%Y-%m-%dT%H:%M:%S-03:00")
         placar_casa = jogo["goals"]["home"]
         placar_fora = jogo["goals"]["away"]
         vencedor = cls.obter_vencedor(placar_casa, placar_fora)
@@ -98,10 +101,12 @@ class API:
     def buscar_jogos(cls, campeonato: Campeonato):
         today = date.today()
         parametros = {
+            "timezone": "America/Sao_Paulo",
+            "status": "NS",
             "season": campeonato.temporada_atual,
             "league": campeonato.id_externo,
-            "to": str(today),
-            "from": str(today + timedelta(days=int(os.getenv("DAYS_GET_JOGOS"))))
+            "from": str(today),
+            "to": str(today + timedelta(days=int(os.getenv("DAYS_GET_JOGOS"))))
         }
         response = requests.get(cls.url + 'fixtures', headers=cls.headers, params=parametros)
         if response.status_code == 200:
@@ -119,8 +124,11 @@ class API:
                 cls.salvar_jogo(jogo, campeonato)
 
     @classmethod
-    def salvar_time(cls, nome, pais):
-        time, _ = Time.objects.get_or_create(nome=nome, pais=pais)
+    def salvar_time(cls, id_externo: int, nome: str, logo: str):
+        time, _ = Time.objects.get_or_create(id_externo=str(id_externo), defaults={
+            "nome": nome,
+            "logo": logo
+        })
         return time
 
     @staticmethod
@@ -135,19 +143,43 @@ class API:
             return VENCEDOR_CHOICES['EMPATE']
 
     @classmethod
-    def update_game_results(cls, game: Jogo) -> bool:
-        response = requests.get(cls.url + f'fixtures?id={game.id_externo}', headers=cls.headers)
-        if response.status_code == 200:
-            data = response.json()["response"][0]
-            placar_casa = data["goals"]["home"]
-            placar_fora = data["goals"]["away"]
-            game.status = data["fixture"]["status"]["short"]
-            game.vencedor = cls.obter_vencedor(placar_casa, placar_fora)
-            game.placar_casa = placar_casa
-            game.placar_fora = placar_fora
-            game.save()
-            return True
-        if cls.api_using == 'RAPID_API':
-            raise Exception(f"Failed to retrieve fixtures. Status code: {response.status_code}")
-        cls.set_rapid_api()
-        return cls.buscar_e_salvar_competicoes()
+    def salvar_resultdo(cls, data: dict, jogo: Jogo):
+            placar_casa = data["score"]["fulltime"]["home"]
+            placar_fora = data["score"]["fulltime"]["away"]
+            jogo.status = data["fixture"]["status"]["short"]
+            jogo.vencedor = cls.obter_vencedor(placar_casa, placar_fora)
+            jogo.placar_casa = placar_casa
+            jogo.placar_fora = placar_fora
+            jogo.save()
+
+    @classmethod
+    def atualizar_resultados(cls, jogos: Union[QuerySet, Jogo], many: bool = True) -> bool:
+        parametros = {"timezone": "America/Sao_Paulo"}
+        if many:
+            values = jogos.values('id_externo')
+            for count in range(0, len(values), 20):
+                parametros['ids'] = '-'.join((jogo['id_externo'] for jogo in values[count:count+20:]))
+                response = requests.get(cls.url + 'fixtures', headers=cls.headers, params=parametros)
+                if response.status_code == 200:
+                    data = response.json()["response"]
+                    cls.salvar_resultdo(data, jogos.get(id_externo=data["fixture"]["id"]))
+                else: break
+            else:
+                # Se o break não for chamado o for cai no else
+                return True
+            if cls.api_using == 'RAPID_API':
+                raise Exception(f"Failed to retrieve fixtures. Status code: {response.status_code}")
+            cls.set_rapid_api()
+            return cls.atualizar_resultados(jogos, many)
+        else:
+            parametros['id'] = jogos.id_externo
+            response = requests.get(cls.url + 'fixtures', headers=cls.headers, params=parametros)
+            if response.status_code == 200:
+                data = response.json()["response"][0]
+                cls.salvar_resultdo(data, jogos)
+                return True
+            else:
+                if cls.api_using == 'RAPID_API':
+                    raise Exception(f"Failed to retrieve fixtures. Status code: {response.status_code}")
+                cls.set_rapid_api()
+                return cls.atualizar_resultados(jogos, many)
