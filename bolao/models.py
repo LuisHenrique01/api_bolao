@@ -8,7 +8,7 @@ from core.models import BaseModel
 from usuario.models import Usuario
 from . import VENCEDOR_CHOICES
 
-from .utils import gerar_codigo, get_taxa_banca
+from core.utils import gerar_codigo, get_taxa_banca
 
 
 class Campeonato(BaseModel):
