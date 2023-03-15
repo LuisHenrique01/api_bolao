@@ -144,13 +144,13 @@ class API:
 
     @classmethod
     def salvar_resultdo(cls, data: dict, jogo: Jogo):
-            placar_casa = data["score"]["fulltime"]["home"]
-            placar_fora = data["score"]["fulltime"]["away"]
-            jogo.status = data["fixture"]["status"]["short"]
-            jogo.vencedor = cls.obter_vencedor(placar_casa, placar_fora)
-            jogo.placar_casa = placar_casa
-            jogo.placar_fora = placar_fora
-            jogo.save()
+        placar_casa = data["score"]["fulltime"]["home"]
+        placar_fora = data["score"]["fulltime"]["away"]
+        jogo.status = data["fixture"]["status"]["short"]
+        jogo.vencedor = cls.obter_vencedor(placar_casa, placar_fora)
+        jogo.placar_casa = placar_casa
+        jogo.placar_fora = placar_fora
+        jogo.save()
 
     @classmethod
     def atualizar_resultados(cls, jogos: Union[QuerySet, Jogo], many: bool = True) -> bool:
@@ -163,7 +163,8 @@ class API:
                 if response.status_code == 200:
                     for data in response.json()["response"]:
                         cls.salvar_resultdo(data, jogos.get(id_externo=data["fixture"]["id"]))
-                else: break
+                else:
+                    break
             else:
                 # Se o break não for chamado o for cai no else
                 return True

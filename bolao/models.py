@@ -71,7 +71,7 @@ class Jogo(BaseModel):
             return f'{self.time_casa} {self.placar_casa} vs {self.placar_fora} {self.time_fora}'
         return str(self)
 
-    def acertou_palpite(self, casa: int, fora: int) ->  bool:
+    def acertou_palpite(self, casa: int, fora: int) -> bool:
         return casa == self.placar_casa and fora == self.placar_fora
 
     def __str__(self):
@@ -98,7 +98,7 @@ class Bolao(BaseModel):
 
     def buscar_vencedores(self):
         return [palpite.usuario for palpite in self.palpites.all() if palpite.acertou]
-    
+
     def pagar_vencedores(self, vencedores: List[Usuario]):
         raise NotImplementedError
 

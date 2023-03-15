@@ -7,6 +7,7 @@ from .models import PermissoesNotificacao, Endereco, Usuario
 admin.site.register(PermissoesNotificacao)
 admin.site.register(Endereco)
 
+
 class UsuarioAdmin(UserAdmin):
     fields = ['nome', 'email',   'telefone', 'is_active', 'permissoes', 'endereco']
     fieldsets = None
@@ -15,7 +16,6 @@ class UsuarioAdmin(UserAdmin):
     ordering = ['nome']
     list_filter = ['permissoes']
     search_fields = ['nome', 'saldo', 'email', 'cpf_marcarado']
-
 
     @admin.display(description='Nome')
     def nome_formatado(self, obj: Usuario):
@@ -32,5 +32,6 @@ class UsuarioAdmin(UserAdmin):
     @admin.display(description="Saldo")
     def saldo(self, obj: Usuario):
         return obj.saldo
+
 
 admin.site.register(Usuario, UsuarioAdmin)
