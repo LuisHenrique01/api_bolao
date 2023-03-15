@@ -154,15 +154,15 @@ class API:
 
     @classmethod
     def atualizar_resultados(cls, jogos: Union[QuerySet, Jogo], many: bool = True) -> bool:
-        parametros = {"timezone": "America/Sao_Paulo"}
+        parametros = {"timezone": "America/Sao_Paulo", "status": "FT-AET-AET"}
         if many:
             values = jogos.values('id_externo')
             for count in range(0, len(values), 20):
                 parametros['ids'] = '-'.join((jogo['id_externo'] for jogo in values[count:count+20:]))
                 response = requests.get(cls.url + 'fixtures', headers=cls.headers, params=parametros)
                 if response.status_code == 200:
-                    data = response.json()["response"]
-                    cls.salvar_resultdo(data, jogos.get(id_externo=data["fixture"]["id"]))
+                    for data in response.json()["response"]:
+                        cls.salvar_resultdo(data, jogos.get(id_externo=data["fixture"]["id"]))
                 else: break
             else:
                 # Se o break não for chamado o for cai no else

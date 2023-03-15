@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from decimal import Decimal
 from uuid import uuid4
@@ -89,7 +90,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, related_name='usuarios')
     permissoes = models.ForeignKey(PermissoesNotificacao, on_delete=models.SET_NULL, null=True, related_name='usuarios')
     carteira = models.OneToOneField(Carteira, on_delete=models.CASCADE)
+
     is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
 
     objects = UserManager()
 
@@ -108,8 +112,21 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         return f'{self.cpf[:3:]}.{self.cpf[3:6:]}.{self.cpf[6:9:]}-{self.cpf[9::]}'
 
     @property
+    def cpf_marcarado(self) -> str:
+        return f'***.{self.cpf[3:6:]}.***-**'
+
+    @property
     def telefone_formatado(self) -> str:
         return f'({self.telefone[:2:]}) {self.telefone[2:7:]}-{self.telefone[7::]}'
+
+    @property
+    def nome_formatado(self) -> str:
+        _nome = self.nome.split()
+        return f'{_nome[0]} {_nome[-1]}'
+
+    @property
+    def saldo(self) -> str:
+        return self.carteira.saldo
 
     def __str__(self) -> str:
         _nome = self.nome.split()

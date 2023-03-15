@@ -1,7 +1,13 @@
+from decimal import Decimal
+import os
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from core.models import BaseModel
+from usuario.models import Usuario
 from . import VENCEDOR_CHOICES
+
+from .utils import gerar_codigo, get_taxa_banca
 
 
 class Campeonato(BaseModel):
@@ -17,7 +23,7 @@ class Campeonato(BaseModel):
     class Meta:
         verbose_name = "Campeonato"
         verbose_name_plural = "Campeonatos"
-        ordering = ['ativo', 'nome']
+        ordering = ['-ativo', 'nome']
 
     def __str__(self):
         return self.nome
@@ -66,3 +72,48 @@ class Jogo(BaseModel):
 
     def __str__(self):
         return f'{self.time_casa} vs {self.time_fora}'
+
+
+class Bolao(BaseModel):
+
+    criador = models.ForeignKey(Usuario, verbose_name="Criador", on_delete=models.PROTECT, related_name='boloes')
+    valor_palpite = models.DecimalField("Valor palpite", max_digits=5, decimal_places=2,
+                                        validators=[MaxValueValidator(Decimal(os.getenv('MAX_PALPITE'))),
+                                                    MinValueValidator(Decimal(os.getenv('MIN_PALPITE')))])
+    codigo = models.CharField("Código", max_length=25, default=gerar_codigo)
+    jogos = models.ManyToManyField(Jogo, verbose_name="Jogos", related_name='boloes')
+
+    class Meta:
+        verbose_name = 'Bolão'
+        verbose_name_plural = 'Bolões'
+
+    def __str__(self):
+        return f'Aposta: {self.valor_palpite}|Código: {self.codigo}'
+
+
+class Palpite(BaseModel):
+
+    usuario = models.ForeignKey(Usuario, verbose_name="Usuário", on_delete=models.PROTECT, related_name='palpites')
+    bolao = models.ForeignKey(Bolao, verbose_name="Bolão", on_delete=models.PROTECT, related_name='palpites')
+
+    class Meta:
+        verbose_name = 'Palpite'
+        verbose_name_plural = 'Palpites'
+
+    def __str__(self) -> str:
+        return f'{self.usuario.nome_formatado}|{self.bolao}'
+
+
+class PalpitePlacar(models.Model):
+
+    jogo = models.ForeignKey(Jogo, verbose_name="Jogo", on_delete=models.PROTECT, related_name='palpites_placar')
+    palpite = models.ForeignKey(Palpite, verbose_name="Palpite", on_delete=models.PROTECT, related_name='placares')
+    placar_casa = models.IntegerField('Placar casa')
+    placar_fora = models.IntegerField('Placar Fora')
+
+    class Meta:
+        verbose_name = 'Placar'
+        verbose_name_plural = 'Placares'
+
+    def __str__(self) -> str:
+        f'{self.jogo.time_casa} {self.placar_casa} vs {self.placar_fora} {self.jogo.time_fora}'
