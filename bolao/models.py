@@ -1,5 +1,6 @@
-from decimal import Decimal
 import os
+from typing import List
+from decimal import Decimal
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -70,6 +71,9 @@ class Jogo(BaseModel):
             return f'{self.time_casa} {self.placar_casa} vs {self.placar_fora} {self.time_fora}'
         return str(self)
 
+    def acertou_palpite(self, casa: int, fora: int) ->  bool:
+        return casa == self.placar_casa and fora == self.placar_fora
+
     def __str__(self):
         return f'{self.time_casa} vs {self.time_fora}'
 
@@ -82,10 +86,24 @@ class Bolao(BaseModel):
                                                     MinValueValidator(Decimal(os.getenv('MIN_PALPITE')))])
     codigo = models.CharField("Código", max_length=25, default=gerar_codigo)
     jogos = models.ManyToManyField(Jogo, verbose_name="Jogos", related_name='boloes')
+    estorno = models.BooleanField("Estorno", default=False)
+    taxa_banca = models.FloatField("Taxa banca", default=get_taxa_banca)
+    taxa_criador = models.FloatField("Taxa banca", default=0,
+                                     validators=[MaxValueValidator(float(os.getenv('MAX_TAXA_CRIADOR'))),
+                                                 MinValueValidator(float(os.getenv('MIN_TAXA_CRIADOR')))])
 
     class Meta:
         verbose_name = 'Bolão'
         verbose_name_plural = 'Bolões'
+
+    def buscar_vencedores(self):
+        return [palpite.usuario for palpite in self.palpites.all() if palpite.acertou]
+    
+    def pagar_vencedores(self, vencedores: List[Usuario]):
+        raise NotImplementedError
+
+    def restornar_apostas(self):
+        raise NotImplementedError
 
     def __str__(self):
         return f'Aposta: {self.valor_palpite}|Código: {self.codigo}'
@@ -99,6 +117,10 @@ class Palpite(BaseModel):
     class Meta:
         verbose_name = 'Palpite'
         verbose_name_plural = 'Palpites'
+
+    @property
+    def acertou(self):
+        return all([palpite.acertou for palpite in self.placares.all()])
 
     def __str__(self) -> str:
         return f'{self.usuario.nome_formatado}|{self.bolao}'
@@ -114,6 +136,10 @@ class PalpitePlacar(models.Model):
     class Meta:
         verbose_name = 'Placar'
         verbose_name_plural = 'Placares'
+
+    @property
+    def acertou(self):
+        return self.jogo.acertou_palpite(self.placar_casa, self.placar_fora)
 
     def __str__(self) -> str:
         f'{self.jogo.time_casa} {self.placar_casa} vs {self.placar_fora} {self.jogo.time_fora}'
