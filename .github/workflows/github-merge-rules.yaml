@@ -13,7 +13,7 @@ env:
   DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
   KEY_FOOTBALL_API_IO: ${{ secrets.KEY_FOOTBALL_API_IO }}
   KEY_FOOTBALL_API_RAPID: ${{ secrets.KEY_FOOTBALL_API_RAPID }}
-  MAX_PALPITE: ${{ env.MAX_PALPITE }}
+  MAX_PALPITE: ${{ vars.MAX_PALPITE }}
 
 jobs:
   flake8:
