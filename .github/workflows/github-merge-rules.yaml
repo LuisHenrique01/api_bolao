@@ -11,6 +11,8 @@ env:
   DB_USER: ${{ secrets.DB_USER }}
   DB_HOST: ${{ secrets.DB_HOST }}
   DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+  KEY_FOOTBALL_API_IO: ${{ secrets.KEY_FOOTBALL_API_IO }}
+  KEY_FOOTBALL_API_RAPID: ${{ secrets.KEY_FOOTBALL_API_RAPID }}
 
 jobs:
   flake8:
