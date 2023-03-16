@@ -1,7 +1,6 @@
 import uuid
 from decimal import Decimal
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from .models import PermissoesNotificacao, Endereco, Carteira, Usuario
 from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException
@@ -120,4 +119,3 @@ class UsuarioModelTest(TestCase):
     def test_deposito_valido(self):
         self.assertTrue(self.usuario.carteira.deposito_valido(Decimal('25.00')))
         self.assertFalse(self.usuario.carteira.deposito_valido(Decimal('10.00')))
-

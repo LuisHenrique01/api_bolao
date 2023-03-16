@@ -5,6 +5,7 @@ from .models import Campeonato, Time, Jogo, Bolao, Palpite
 from datetime import datetime, timedelta
 from usuario.factories.usuario import CarteiraFactory, EnderecoFactory, PermissoesNotificacaoFactory, UsuarioFactory
 
+
 class CampeonatoTest(TestCase):
 
     def test_str(self):
@@ -99,6 +100,7 @@ class BolaoModelTestCase(TestCase):
         bolao = Bolao.objects.create(criador=self.criador, valor_palpite=Decimal('10.00'))
         vencedores = bolao.buscar_vencedores()
         self.assertEqual(vencedores, [])
+
 
 '''
     def test_pagar_vencedores(self):
