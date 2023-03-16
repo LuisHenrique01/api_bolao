@@ -1,9 +1,26 @@
-name: Lint check with flake8
+name: Lint check with flake8 and Django Tests
 
 on:
   pull_request:
     branches:
       - main
+
+env:
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+  KEY_FOOTBALL_API_IO: ${{ secrets.KEY_FOOTBALL_API_IO }}
+  KEY_FOOTBALL_API_RAPID: ${{ secrets.KEY_FOOTBALL_API_RAPID }}
+  MAX_PALPITE: ${{ vars.MAX_PALPITE }}
+  MIN_SAQUE: ${{ vars.MIN_SAQUE }}
+  MIN_DEPOSITO: ${{ vars.MIN_DEPOSITO }}
+  DAYS_GET_JOGOS: ${{ vars.DAYS_GET_JOGOS }}
+  TAXA_BANCA: ${{ vars.TAXA_BANCA }}
+  MAX_TAXA_CRIADOR: ${{ vars.MAX_TAXA_CRIADOR }}
+  MIN_TAXA_CRIADOR: ${{ vars.MIN_TAXA_CRIADOR }}
+  MIN_PALPITE: ${{ vars.MIN_PALPITE }}
 
 jobs:
   flake8:
@@ -21,11 +38,40 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Flake8 Lint Check
-        env:
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
         run: |
           flake8 --config=.flake8
+
+  django_tests:
+    name: Django Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: ${{ secrets.DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.DB_NAME }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run Django tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+        run: |
+          python manage.py test

@@ -21,7 +21,7 @@ class PermissoesNotificacao(BaseModel):
         verbose_name = "Pemissão para notificação"
         verbose_name_plural = "Pemissões para notificações"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'SMS: {self.sms}|E-mail: {self.email}'
 
 
@@ -39,13 +39,13 @@ class Endereco(BaseModel):
         verbose_name = "Endereço"
         verbose_name_plural = "Endereços"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'CEP: {self.cep}|Cidade: {self.cidade}'
 
 
 class Carteira(BaseModel):
 
-    __saldo = models.DecimalField('Saldo', name='saldo', max_digits=9, decimal_places=2, default=Decimal(0))
+    _saldo = models.DecimalField('Saldo', name='saldo', max_digits=9, decimal_places=2, default=Decimal(0))
 
     def saque_valido(self, valor: Decimal) -> bool:
         return valor >= Decimal(os.getenv('MIN_SAQUE')) and (self.saldo - valor) >= 0
@@ -54,19 +54,19 @@ class Carteira(BaseModel):
     def deposito_valido(self, valor: Decimal) -> bool:
         return valor >= Decimal(os.getenv('MIN_DEPOSITO'))
 
-    def saque(self, valor: Decimal):
+    def saque(self, valor: Decimal) -> None:
         if not self.saque_valido(valor):
             raise SaldoInvalidoException()
-        self.__saldo -= valor
+        self.saldo -= valor
 
-    def depositar(self, valor: Decimal):
+    def depositar(self, valor: Decimal) -> None:
         if not self.deposito_valido(valor):
             raise DepositoInvalidoException()
-        self.__saldo += valor
+        self.saldo += valor
 
     @property
     def saldo(self):
-        return self.__saldo
+        return self.saldo
 
     def transferir(self, valor: Decimal) -> bool:
         raise NotImplementedError(f'Transferência de {valor} R$ não for realizada.')
@@ -89,7 +89,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, related_name='usuarios')
     permissoes = models.ForeignKey(PermissoesNotificacao, on_delete=models.SET_NULL, null=True, related_name='usuarios')
     carteira = models.OneToOneField(Carteira, on_delete=models.CASCADE)
+
     is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
 
     objects = UserManager()
 
@@ -104,12 +107,25 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         return getattr(self.permissoes, tipo, False)
 
     @property
-    def cpf(self):
+    def cpf_formatado(self) -> str:
         return f'{self.cpf[:3:]}.{self.cpf[3:6:]}.{self.cpf[6:9:]}-{self.cpf[9::]}'
 
     @property
-    def telefone(self):
+    def cpf_marcarado(self) -> str:
+        return f'***.{self.cpf[3:6:]}.***-**'
+
+    @property
+    def telefone_formatado(self) -> str:
         return f'({self.telefone[:2:]}) {self.telefone[2:7:]}-{self.telefone[7::]}'
+
+    @property
+    def nome_formatado(self) -> str:
+        _nome = self.nome.split()
+        return f'{_nome[0]} {_nome[-1]}'
+
+    @property
+    def saldo(self) -> str:
+        return self.carteira.saldo
 
     def __str__(self) -> str:
         _nome = self.nome.split()

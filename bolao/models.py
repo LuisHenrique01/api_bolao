@@ -1,7 +1,14 @@
+import os
+from typing import List
+from decimal import Decimal
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from core.models import BaseModel
+from usuario.models import Usuario
 from . import VENCEDOR_CHOICES
+
+from core.utils import gerar_codigo, get_taxa_banca
 
 
 class Campeonato(BaseModel):
@@ -9,7 +16,7 @@ class Campeonato(BaseModel):
     nome = models.CharField("Nome", max_length=75)
     pais = models.CharField('País', max_length=75)
     tipo = models.CharField('Tipo', max_length=75, null=True, blank=True)
-    id_externo = models.CharField('ID externo', max_length=25, null=True, blank=True)
+    id_externo = models.CharField('ID externo', max_length=25, null=True, blank=True, unique=True)
     logo = models.URLField('Logo', null=True, blank=True)
     ativo = models.BooleanField("Ativo", default=True)
     temporada_atual = models.CharField('Temporada', max_length=75)
@@ -17,6 +24,7 @@ class Campeonato(BaseModel):
     class Meta:
         verbose_name = "Campeonato"
         verbose_name_plural = "Campeonatos"
+        ordering = ['-ativo', 'nome']
 
     def __str__(self):
         return self.nome
@@ -24,9 +32,14 @@ class Campeonato(BaseModel):
 
 class Time(BaseModel):
 
-    id_externo = models.CharField('ID externo', max_length=50)
+    id_externo = models.CharField('ID externo', max_length=50, unique=True)
     nome = models.CharField('Nome', max_length=50)
     logo = models.URLField('Logo', max_length=200)
+
+    class Meta:
+        verbose_name = "Time"
+        verbose_name_plural = "Times"
+        ordering = ['nome']
 
     def __str__(self) -> str:
         return self.nome
@@ -34,7 +47,7 @@ class Time(BaseModel):
 
 class Jogo(BaseModel):
 
-    id_externo = models.CharField('ID externo', max_length=50)
+    id_externo = models.CharField('ID externo', max_length=50, unique=True)
     time_casa = models.ForeignKey(Time, verbose_name="Time casa", on_delete=models.CASCADE,
                                   related_name='jogos_casa')
     time_fora = models.ForeignKey(Time, verbose_name="Time fora", on_delete=models.CASCADE,
@@ -50,6 +63,7 @@ class Jogo(BaseModel):
     class Meta:
         verbose_name = "Jogo"
         verbose_name_plural = "Jogos"
+        ordering = ['-data', 'status']
 
     @property
     def placar(self):
@@ -57,5 +71,75 @@ class Jogo(BaseModel):
             return f'{self.time_casa} {self.placar_casa} vs {self.placar_fora} {self.time_fora}'
         return str(self)
 
+    def acertou_palpite(self, casa: int, fora: int) -> bool:
+        return casa == self.placar_casa and fora == self.placar_fora
+
     def __str__(self):
         return f'{self.time_casa} vs {self.time_fora}'
+
+
+class Bolao(BaseModel):
+
+    criador = models.ForeignKey(Usuario, verbose_name="Criador", on_delete=models.PROTECT, related_name='boloes')
+    valor_palpite = models.DecimalField("Valor palpite", max_digits=5, decimal_places=2,
+                                        validators=[MaxValueValidator(Decimal(os.getenv('MAX_PALPITE'))),
+                                                    MinValueValidator(Decimal(os.getenv('MIN_PALPITE')))])
+    codigo = models.CharField("Código", max_length=25, default=gerar_codigo)
+    jogos = models.ManyToManyField(Jogo, verbose_name="Jogos", related_name='boloes')
+    estorno = models.BooleanField("Estorno", default=False)
+    taxa_banca = models.FloatField("Taxa banca", default=get_taxa_banca)
+    taxa_criador = models.FloatField("Taxa banca", default=0,
+                                     validators=[MaxValueValidator(float(os.getenv('MAX_TAXA_CRIADOR'))),
+                                                 MinValueValidator(float(os.getenv('MIN_TAXA_CRIADOR')))])
+
+    class Meta:
+        verbose_name = 'Bolão'
+        verbose_name_plural = 'Bolões'
+
+    def buscar_vencedores(self):
+        return [palpite.usuario for palpite in self.palpites.all() if palpite.acertou]
+
+    def pagar_vencedores(self, vencedores: List[Usuario]):
+        raise NotImplementedError
+
+    def restornar_apostas(self):
+        raise NotImplementedError
+
+    def __str__(self):
+        return f'Aposta: {self.valor_palpite}|Código: {self.codigo}'
+
+
+class Palpite(BaseModel):
+
+    usuario = models.ForeignKey(Usuario, verbose_name="Usuário", on_delete=models.PROTECT, related_name='palpites')
+    bolao = models.ForeignKey(Bolao, verbose_name="Bolão", on_delete=models.PROTECT, related_name='palpites')
+
+    class Meta:
+        verbose_name = 'Palpite'
+        verbose_name_plural = 'Palpites'
+
+    @property
+    def acertou(self):
+        return all([palpite.acertou for palpite in self.placares.all()])
+
+    def __str__(self) -> str:
+        return f'{self.usuario.nome_formatado}|{self.bolao}'
+
+
+class PalpitePlacar(models.Model):
+
+    jogo = models.ForeignKey(Jogo, verbose_name="Jogo", on_delete=models.PROTECT, related_name='palpites_placar')
+    palpite = models.ForeignKey(Palpite, verbose_name="Palpite", on_delete=models.PROTECT, related_name='placares')
+    placar_casa = models.IntegerField('Placar casa')
+    placar_fora = models.IntegerField('Placar Fora')
+
+    class Meta:
+        verbose_name = 'Placar'
+        verbose_name_plural = 'Placares'
+
+    @property
+    def acertou(self):
+        return self.jogo.acertou_palpite(self.placar_casa, self.placar_fora)
+
+    def __str__(self) -> str:
+        f'{self.jogo.time_casa} {self.placar_casa} vs {self.placar_fora} {self.jogo.time_fora}'
