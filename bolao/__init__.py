@@ -3,3 +3,9 @@ VENCEDOR_CHOICES = {
     'FORA': 'FORA',
     'EMPATE': 'EMPATE',
 }
+STATUS_BOLAO = {
+    'ATIVO': 'AT',
+    'PALPITES PAUSADOS': 'PP',
+    'JOGO INICIADO': 'JI',
+    'FINALIZADO': 'FI'
+}

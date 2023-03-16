@@ -6,7 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from core.models import BaseModel
 from usuario.models import Usuario
-from . import VENCEDOR_CHOICES
+from . import VENCEDOR_CHOICES, STATUS_BOLAO
 
 from core.utils import gerar_codigo, get_taxa_banca
 
@@ -91,6 +91,7 @@ class Bolao(BaseModel):
     taxa_criador = models.FloatField("Taxa banca", default=0,
                                      validators=[MaxValueValidator(float(os.getenv('MAX_TAXA_CRIADOR'))),
                                                  MinValueValidator(float(os.getenv('MIN_TAXA_CRIADOR')))])
+    vencedor = models.CharField(max_length=2, choices=STATUS_BOLAO.items(), default=STATUS_BOLAO['ATIVO'])
 
     class Meta:
         verbose_name = 'Bolão'
@@ -99,11 +100,47 @@ class Bolao(BaseModel):
     def buscar_vencedores(self):
         return [palpite.usuario for palpite in self.palpites.all() if palpite.acertou]
 
-    def pagar_vencedores(self, vencedores: List[Usuario]):
-        raise NotImplementedError
+    def retirar_banca_e_criador(self) -> Decimal:
+        """Retorna o valor restante da subtração"""
+        total_bolao = self.palpites.count() * self.valor_palpite
+        valor_banca = Decimal(self.taxa_banca / 100).quantize('.01') * total_bolao
+        valor_criador = Decimal(self.taxa_criador / 100).quantize('.01') * total_bolao
+        self.criador.carteira.depositar(valor_criador)
+        return total_bolao - (valor_banca + valor_criador)
 
-    def restornar_apostas(self):
-        raise NotImplementedError
+    def pagar_vencedores(self, vencedores: List[Usuario]):
+        """Usar quando a vencedores."""
+        liquido = self.retirar_banca_e_criador()
+        ganho = liquido / len(vencedores)
+        for vencedor in vencedores:
+            vencedor.carteira.depositar(ganho)
+
+    def estornar_bolao(self):
+        """Usar quando não a vencedores e estorno está ativado."""
+        liquido = self.retirar_banca_e_criador()
+        ganho = liquido / self.palpites.count()
+        for palpite in self.palpites.all():
+            palpite.usuario.carteira.depositar(ganho)
+
+    def dividir_entre_banca_e_criador(self):
+        """Usar quando não a vencedores e estorno não está ativado."""
+        ganho = self.retirar_banca_e_criador()
+        self.criador.carteira.depositar(ganho)
+
+    def cancelar_bolao(self):
+        for palpite in self.self.palpites.all():
+            palpite.usuario.carteira.depositar(self.valor_palpite)
+
+    def finalizar_bolao(self):
+        vencedores = self.buscar_vencedores()
+        if len(vencedores) > 0:
+            self.pagar_vencedores(vencedores)
+        elif len(vencedores) == 0 and self.estorno:
+            self.estornar_bolao()
+        elif len(vencedores) == 0 and not self.estorno:
+            self.dividir_entre_banca_e_criador()
+        else:
+            self.cancelar_aposta()
 
     def __str__(self):
         return f'Aposta: {self.valor_palpite}|Código: {self.codigo}'
