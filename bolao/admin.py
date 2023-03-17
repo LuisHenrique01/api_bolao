@@ -1,6 +1,9 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 
-from .models import Campeonato, Time, Jogo
+from . import STATUS_JOGO_FINALIZADO_API, STATUS_BOLAO
+
+from .models import Campeonato, Time, Jogo, Bolao, Palpite, PalpitePlacar
+from .forms import PalpitePlacarForm
 from core.network.football import API
 
 
@@ -30,11 +33,10 @@ class TimeAdmin(admin.ModelAdmin):
 
 @admin.register(Jogo)
 class JogoAdmin(admin.ModelAdmin):
-    list_display = ('time_casa', 'time_fora', 'status', 'data', 'placar_casa',
-                    'placar_fora', 'vencedor', 'campeonato')
+    list_display = ['time_casa', 'time_fora', 'status', 'data', 'placar_casa',
+                    'placar_fora', 'vencedor', 'campeonato']
     list_filter = ['status', 'data']
-    actions_on_top = ['buscar_e_salvar_jogos']
-    actions = ['atualizar_resultados']
+    actions = ['atualizar_resultados', 'buscar_e_salvar_jogos']
 
     def buscar_e_salvar_jogos(self, _, queryset):
         campeonatos = Campeonato.objects.filter(ativo=True)
@@ -46,3 +48,53 @@ class JogoAdmin(admin.ModelAdmin):
         if API.atualizar_resultados(queryset):
             queryset = Jogo.objects.all()
         return queryset
+
+
+@admin.register(Bolao)
+class BolaoAdmin(admin.ModelAdmin):
+    list_display = ['codigo', 'criador', 'valor_palpite', 'get_jogos', 'estorno', 'taxa_criador',
+                    'taxa_banca', 'status']
+    list_filter = ['criador', 'estorno']
+    search_fields = ['codigo', 'criador', 'valor_palpite']
+    actions = ['cancelar_bolao', 'finalizar_bolao']
+
+    def get_jogos(self, obj):
+        return ''.join((str(j) for j in obj.jogos.all()))
+
+    def cancelar_bolao(self, request, queryset):
+        for bolao in queryset:
+            if getattr(request.user, 'is_superuser', False) or bolao.criador.id == request.user.id:
+                if bolao.status == STATUS_BOLAO['FINALIZADO'] or bolao.status == STATUS_BOLAO['CANCELADO']:
+                    messages.error(request, f"Erro ao cancelar o bolão {bolao.codigo}. \
+                                   O bolão já está {bolao.status.lower()}!")
+                else:
+                    bolao.cancelar_bolao()
+                    messages.success(request, f"Sucesso ao cancelar o bolão {bolao.codigo}.")
+            else:
+                messages.error(request, f"Erro ao cancelar o bolão {bolao.codigo}. Você não tem permissão!")
+
+    def finalizar_bolao(self, request, queryset):
+        if getattr(request.user, 'is_superuser', False):
+            status = tuple(STATUS_JOGO_FINALIZADO_API.split('-'))
+            for bolao in queryset:
+                if all([jogo.status in status for jogo in bolao.jogos.all()]):
+                    if bolao.status == STATUS_BOLAO['FINALIZADO'] or bolao.status == STATUS_BOLAO['CANCELADO']:
+                        messages.error(request, f"Erro ao finalizar o bolão {bolao.codigo}. \
+                                       O bolão já está {bolao.status.lower()}!")
+                    else:
+                        bolao.finalizar_bolao()
+                        messages.success(request, f"Sucesso ao finalizar o bolão {bolao.codigo}.")
+                else:
+                    messages.error(request, f"Erro ao cancelar o bolão {bolao.codigo}. \
+                                   Nem todos os jogos foram finalizados!")
+
+
+class PalpitePlacarInline(admin.TabularInline):
+    model = PalpitePlacar
+    form = PalpitePlacarForm
+
+
+@admin.register(Palpite)
+class PalpiteAdmin(admin.ModelAdmin):
+    inlines = (PalpitePlacarInline, )
+    list_display = ['bolao', 'usuario']

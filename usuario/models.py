@@ -4,7 +4,7 @@ from uuid import uuid4
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 
-from django.db import models
+from django.db import models, transaction
 
 from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException
 from core.models import BaseModel
@@ -47,27 +47,36 @@ class Carteira(BaseModel):
 
     _saldo = models.DecimalField('Saldo', name='saldo', max_digits=9, decimal_places=2, default=Decimal(0))
 
-    def saque_valido(self, valor: Decimal) -> bool:
-        return valor >= Decimal(os.getenv('MIN_SAQUE')) and (self.saldo - valor) >= 0
+    def saque_valido(self, valor: Decimal, externo: bool = False) -> bool:
+        if externo:
+            return valor >= Decimal(os.getenv('MIN_SAQUE')) and (self.saldo - valor) >= 0
+        return (self.saldo - valor) >= 0
 
     @classmethod
-    def deposito_valido(self, valor: Decimal) -> bool:
-        return valor >= Decimal(os.getenv('MIN_DEPOSITO'))
+    def deposito_valido(self, valor: Decimal, externo: bool = False) -> bool:
+        if externo:
+            return valor >= Decimal(os.getenv('MIN_DEPOSITO'))
+        return valor >= 0
 
-    def saque(self, valor: Decimal) -> None:
-        if not self.saque_valido(valor):
+    @transaction.atomic
+    def saque(self, valor: Decimal, externo: bool = False) -> None:
+        if not self.saque_valido(valor, externo=externo):
             raise SaldoInvalidoException()
         self.saldo -= valor
+        self.save()
 
-    def depositar(self, valor: Decimal) -> None:
-        if not self.deposito_valido(valor):
+    @transaction.atomic
+    def depositar(self, valor: Decimal, externo: bool = False) -> None:
+        if not self.deposito_valido(valor, externo=externo):
             raise DepositoInvalidoException()
         self.saldo += valor
+        self.save()
 
     @property
     def saldo(self):
         return self.saldo
 
+    @transaction.atomic
     def transferir(self, valor: Decimal) -> bool:
         raise NotImplementedError(f'Transferência de {valor} R$ não for realizada.')
 

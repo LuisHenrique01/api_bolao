@@ -1,12 +1,13 @@
 import os
-from typing import List
 from decimal import Decimal
-from django.db import models
+from typing import List
+from django.db import models, transaction
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
 
 from core.models import BaseModel
 from usuario.models import Usuario
-from . import VENCEDOR_CHOICES
+from . import VENCEDOR_CHOICES, STATUS_BOLAO
 
 from core.utils import gerar_codigo, get_taxa_banca
 
@@ -88,9 +89,10 @@ class Bolao(BaseModel):
     jogos = models.ManyToManyField(Jogo, verbose_name="Jogos", related_name='boloes')
     estorno = models.BooleanField("Estorno", default=False)
     taxa_banca = models.FloatField("Taxa banca", default=get_taxa_banca)
-    taxa_criador = models.FloatField("Taxa banca", default=0,
+    taxa_criador = models.FloatField("Taxa criador", default=0,
                                      validators=[MaxValueValidator(float(os.getenv('MAX_TAXA_CRIADOR'))),
                                                  MinValueValidator(float(os.getenv('MIN_TAXA_CRIADOR')))])
+    status = models.CharField(max_length=20, choices=STATUS_BOLAO.items(), default=STATUS_BOLAO['ATIVO'])
 
     class Meta:
         verbose_name = 'Bolão'
@@ -99,11 +101,53 @@ class Bolao(BaseModel):
     def buscar_vencedores(self):
         return [palpite.usuario for palpite in self.palpites.all() if palpite.acertou]
 
-    def pagar_vencedores(self, vencedores: List[Usuario]):
-        raise NotImplementedError
+    def retirar_banca_e_criador(self) -> Decimal:
+        """Retorna o valor restante da subtração"""
+        total_bolao = self.palpites.count() * self.valor_palpite
+        valor_banca = Decimal(self.taxa_banca / 100).quantize(Decimal('.01')) * total_bolao
+        valor_criador = Decimal(self.taxa_criador / 100).quantize(Decimal('.01')) * total_bolao
+        self.criador.carteira.depositar(valor_criador)
+        return total_bolao - (valor_banca + valor_criador)
 
-    def restornar_apostas(self):
-        raise NotImplementedError
+    def pagar_vencedores(self, vencedores: List[Usuario]):
+        """Usar quando a vencedores."""
+        liquido = self.retirar_banca_e_criador()
+        ganho = liquido / len(vencedores)
+        for vencedor in vencedores:
+            vencedor.carteira.depositar(ganho)
+
+    def estornar_bolao(self):
+        """Usar quando não a vencedores e estorno está ativado."""
+        liquido = self.retirar_banca_e_criador()
+        ganho = liquido / self.palpites.count()
+        for palpite in self.palpites.all():
+            palpite.usuario.carteira.depositar(ganho)
+
+    def dividir_entre_banca_e_criador(self):
+        """Usar quando não a vencedores e estorno não está ativado."""
+        ganho = self.retirar_banca_e_criador()
+        self.criador.carteira.depositar(ganho)
+
+    @transaction.atomic
+    def cancelar_bolao(self):
+        for palpite in self.self.palpites.all():
+            palpite.usuario.carteira.depositar(self.valor_palpite)
+        self.status = STATUS_BOLAO['CANCELADO']
+        self.save()
+
+    @transaction.atomic
+    def finalizar_bolao(self):
+        vencedores = self.buscar_vencedores()
+        if len(vencedores) > 0:
+            self.pagar_vencedores(vencedores)
+        elif len(vencedores) == 0 and self.estorno:
+            self.estornar_bolao()
+        elif len(vencedores) == 0 and not self.estorno:
+            self.dividir_entre_banca_e_criador()
+        else:
+            self.cancelar_aposta()
+        self.status = STATUS_BOLAO['FINALIZADO']
+        self.save()
 
     def __str__(self):
         return f'Aposta: {self.valor_palpite}|Código: {self.codigo}'
@@ -121,6 +165,17 @@ class Palpite(BaseModel):
     @property
     def acertou(self):
         return all([palpite.acertou for palpite in self.placares.all()])
+
+    def clean(self) -> None:
+        if not self.usuario.carteira.saque_valido(self.bolao.valor_palpite):
+            raise ValidationError("Saldo insuficiente.")
+        if self.bolao.status != STATUS_BOLAO['ATIVO']:
+            raise ValidationError(f"Não é possível dar palpites pois o bolão {self.bolao.status.lower()}")
+        return super().clean()
+
+    def save(self, **kwargs) -> None:
+        self.usuario.carteira.saque(self.bolao.valor_palpite)
+        return super().save(**kwargs)
 
     def __str__(self) -> str:
         return f'{self.usuario.nome_formatado}|{self.bolao}'
@@ -142,4 +197,4 @@ class PalpitePlacar(models.Model):
         return self.jogo.acertou_palpite(self.placar_casa, self.placar_fora)
 
     def __str__(self) -> str:
-        f'{self.jogo.time_casa} {self.placar_casa} vs {self.placar_fora} {self.jogo.time_fora}'
+        return f'{self.jogo.time_casa} {self.placar_casa} vs {self.placar_fora} {self.jogo.time_fora}'
