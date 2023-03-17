@@ -6,7 +6,7 @@ from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
 
-from bolao import VENCEDOR_CHOICES
+from bolao import VENCEDOR_CHOICES, STATUS_JOGO_FINALIZADO_API
 from bolao.models import Campeonato, Jogo, Time
 
 
@@ -154,7 +154,7 @@ class API:
 
     @classmethod
     def atualizar_resultados(cls, jogos: Union[QuerySet, Jogo], many: bool = True) -> bool:
-        parametros = {"timezone": "America/Sao_Paulo", "status": "FT-AET-AET"}
+        parametros = {"timezone": "America/Sao_Paulo", "status": STATUS_JOGO_FINALIZADO_API}
         if many:
             values = jogos.values('id_externo')
             for count in range(0, len(values), 20):
