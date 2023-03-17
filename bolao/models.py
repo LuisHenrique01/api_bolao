@@ -168,9 +168,11 @@ class Palpite(BaseModel):
         return all([palpite.acertou for palpite in self.placares.all()])
 
     def clean(self) -> None:
-        if self.usuario.carteira.saque_valido(self.bolao.valor_palpite):
-            return super().clean()
-        raise ValidationError("Saldo insuficiente.")
+        if not self.usuario.carteira.saque_valido(self.bolao.valor_palpite):
+            raise ValidationError("Saldo insuficiente.")
+        if self.bolao.status != STATUS_BOLAO['ATIVO']:
+            raise ValidationError(f"Não é possível dar palpites pois o bolão {self.bolao.status.lower()}")
+        return super().clean()
 
     def save(self, **kwargs) -> None:
         self.usuario.carteira.saque(self.bolao.valor_palpite)
