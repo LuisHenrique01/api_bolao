@@ -59,15 +59,15 @@ class Carteira(BaseModel):
         return valor >= 0
 
     @transaction.atomic
-    def saque(self, valor: Decimal) -> None:
-        if not self.saque_valido(valor):
+    def saque(self, valor: Decimal, externo: bool = False) -> None:
+        if not self.saque_valido(valor, externo=externo):
             raise SaldoInvalidoException()
         self.saldo -= valor
         self.save()
 
     @transaction.atomic
-    def depositar(self, valor: Decimal) -> None:
-        if not self.deposito_valido(valor):
+    def depositar(self, valor: Decimal, externo: bool = False) -> None:
+        if not self.deposito_valido(valor, externo=externo):
             raise DepositoInvalidoException()
         self.saldo += valor
         self.save()

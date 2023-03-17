@@ -4,7 +4,6 @@ from typing import List
 from django.db import models, transaction
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
-from core.custom_exception import DepositoInvalidoException, SaldoInvalidoException
 
 from core.models import BaseModel
 from usuario.models import Usuario

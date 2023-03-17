@@ -39,9 +39,9 @@ class CarteiraModelTest(TestCase):
     def test_saque_valido(self):
         self.assertFalse(self.carteira.saque_valido(Decimal("100")))
 
-    def test_deposito_valido(self):
+    def test_deposito_valido_interno(self):
         self.assertTrue(Carteira.deposito_valido(Decimal("50")))
-        self.assertFalse(Carteira.deposito_valido(Decimal("9.99")))
+        self.assertTrue(Carteira.deposito_valido(Decimal("9.99")))
 
     def test_saque(self):
         self.carteira.depositar(Decimal("100"))
@@ -58,7 +58,7 @@ class CarteiraModelTest(TestCase):
 
     def test_depositar_raises_exception_when_value_is_below_min_deposito(self):
         with self.assertRaises(DepositoInvalidoException):
-            self.carteira.depositar(Decimal("9.99"))
+            self.carteira.depositar(Decimal("9.99"), externo=True)
 
 
 class UsuarioModelTest(TestCase):
@@ -116,6 +116,6 @@ class UsuarioModelTest(TestCase):
         self.assertTrue(self.usuario.carteira.saque_valido(Decimal('50.00')))
         self.assertFalse(self.usuario.carteira.saque_valido(Decimal('200.00')))
 
-    def test_deposito_valido(self):
-        self.assertTrue(self.usuario.carteira.deposito_valido(Decimal('25.00')))
-        self.assertFalse(self.usuario.carteira.deposito_valido(Decimal('10.00')))
+    def test_deposito_valido_externo(self):
+        self.assertTrue(self.usuario.carteira.deposito_valido(Decimal('25.00'), externo=True))
+        self.assertFalse(self.usuario.carteira.deposito_valido(Decimal('10.00'), externo=True))
