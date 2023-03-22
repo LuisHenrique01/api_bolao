@@ -7,7 +7,7 @@ from django.contrib.auth.models import PermissionsMixin
 from django.db import models, transaction
 
 from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException
-from core.models import BaseModel
+from core.models import BaseModel, HistoricoTransacao
 
 from .managers import UserManager
 
@@ -46,14 +46,19 @@ class Endereco(BaseModel):
 class Carteira(BaseModel):
 
     _saldo = models.DecimalField('Saldo', name='saldo', max_digits=9, decimal_places=2, default=Decimal(0))
+    bloqueado = models.BooleanField('Carteira bloqueada', default=False)
+    pix = models.CharField(max_length=50, blank=True, null=True)
 
     def saque_valido(self, valor: Decimal, externo: bool = False) -> bool:
+        if self.bloqueado:
+            return False
         if externo:
             return valor >= Decimal(os.getenv('MIN_SAQUE')) and (self.saldo - valor) >= 0
         return (self.saldo - valor) >= 0
 
-    @classmethod
     def deposito_valido(self, valor: Decimal, externo: bool = False) -> bool:
+        if self.bloqueado:
+            return False
         if externo:
             return valor >= Decimal(os.getenv('MIN_DEPOSITO'))
         return valor >= 0
@@ -64,6 +69,7 @@ class Carteira(BaseModel):
             raise SaldoInvalidoException()
         self.saldo -= valor
         self.save()
+        HistoricoTransacao.criar_registro(carteira=self, valor=-valor, externo=externo, pix=self.pix)
 
     @transaction.atomic
     def depositar(self, valor: Decimal, externo: bool = False) -> None:
@@ -71,6 +77,7 @@ class Carteira(BaseModel):
             raise DepositoInvalidoException()
         self.saldo += valor
         self.save()
+        HistoricoTransacao.criar_registro(carteira=self, valor=valor, externo=externo, pix=self.pix)
 
     @property
     def saldo(self):
@@ -135,6 +142,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     @property
     def saldo(self) -> str:
         return self.carteira.saldo
+    
+    def save(self, **kwargs):
+        self.carteira = Carteira.objects.create()
+        return super().save(**kwargs)
 
     def __str__(self) -> str:
         _nome = self.nome.split()
