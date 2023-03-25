@@ -1,6 +1,6 @@
 import os
 import re
-from secrets import token_hex
+from secrets import token_hex, randbelow
 from django.core.exceptions import ValidationError
 
 
@@ -9,9 +9,11 @@ def get_taxa_banca() -> float:
     return float(os.getenv('TAXA_BANCA'))
 
 
-def gerar_codigo() -> str:
+def gerar_codigo(numerico: bool = False) -> str:
     """Gera um token aleatório."""
-    return token_hex(8).upper()
+    if numerico:
+        return token_hex(6).upper()
+    return ''.join((str(randbelow(9)) for _ in range(6)))
 
 
 def cpf_valido(cpf: str, raise_exception: bool = True) -> bool:

@@ -1,6 +1,9 @@
+import os
 from rest_framework import serializers
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 
 from usuario.models import Carteira, Endereco, PermissoesNotificacao, Usuario
+from core.custom_exception import UsuarioNaoEncontrado
 
 
 class EnderecoSerializer(serializers.ModelSerializer):
@@ -45,3 +48,46 @@ class CriarUsuarioSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class UsuarioNotificacaoSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+    sms = serializers.CharField(required=False)
+
+    def enviar_codigo(self):
+        try:
+            if self.validated_data["email"]:
+                usuario = Usuario.objects.get(email=self.validated_data['email'])
+                usuario.permissoes.enviar_validacao_email()
+            if self.validated_data["sms"]:
+                usuario = Usuario.objects.get(telefone=self.validated_data['sms'])
+                usuario.permissoes.enviar_validacao_sms()
+        except ObjectDoesNotExist:
+            raise UsuarioNaoEncontrado()
+
+
+class UsuarioNovaSenhaSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+    codigo = serializers.CharField(required=False)
+    senha_atual = serializers.CharField(required=False)
+    nova_senha = serializers.CharField()
+
+    def mudar_senha(self):
+        try:
+            if self.validated_data['email']:
+                usuario = Usuario.objects.get(email=self.validated_data['email'])
+                if usuario.check_password(self.validated_data['senha_atual']):
+                    usuario.set_password(self.validated_data['nova_senha'])
+                    return usuario.save()
+                raise PermissionDenied()
+
+            usuario = Usuario.objects.get(permissoes__codigos__codigo=self.validated_data['codigo'])
+            usuario.set_password(self.validated_data['nova_senha'])
+            return usuario.save()
+        except ObjectDoesNotExist:
+            raise UsuarioNaoEncontrado()
+
+    def validate(self, attrs):
+        if not attrs['codigo'] and not attrs['senha_atual']:
+            raise serializers.ValidationError("Para mudar a senha você deve preencher com a senha atual.")
+        if not attrs['codigo'] and not attrs['email']:
+            raise serializers.ValidationError("Para mudar a senha você deve preencher com o seu email.")
+        return super().validate(attrs)

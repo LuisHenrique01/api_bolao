@@ -1,14 +1,17 @@
 import os
 from decimal import Decimal
 from uuid import uuid4
+from datetime import timedelta
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 
 from django.db import models, transaction
+from django.core.mail import send_mail
+from django.utils import timezone
 
 from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException
 from core.models import BaseModel, HistoricoTransacao
-from core.utils import cpf_valido
+from core.utils import cpf_valido, gerar_codigo
 
 from .managers import UserManager
 
@@ -17,10 +20,52 @@ class PermissoesNotificacao(BaseModel):
 
     sms = models.BooleanField('SMS', default=True)
     email = models.BooleanField('E-mail', default=True)
+    sms_verificado = models.BooleanField('SMS vefiricado', default=False)
+    email_verificado = models.BooleanField('E-mail verificado', default=False)
+
+    def enviar_validacao_email(self) -> str:
+        codigo = CodigosDeValidacao(permissao=self, tipo='email')
+        codigo.save()
+        if self.data['email']:
+            send_mail(
+                'Código para recuperação de senha.',
+                f'Seu código de verificação é {codigo.codigo}.\n\n Seu código expira em 30 minutos.',
+                os.getenv('EMAIL'),
+                [self.data['email']],
+                fail_silently=False,
+            )
+
+    def enviar_validacao_sms(self) -> str:
+        raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
 
     class Meta:
         verbose_name = "Pemissão para notificação"
         verbose_name_plural = "Pemissões para notificações"
+
+    def __str__(self) -> str:
+        return f'SMS: {self.sms}|E-mail: {self.email}'
+
+
+class CodigosDeValidacao(BaseModel):
+
+    permissao = models.ForeignKey(PermissoesNotificacao, verbose_name='Permissão', on_delete=models.CASCADE, related_name='codigos')
+    tipo = models.CharField('Tipo', max_length=50)
+    codigo = models.CharField('Código', max_length=50, blank=True)
+    confirmado = models.BooleanField('Confirmado', default=False)
+
+    @classmethod
+    def valido(self, codigo: str) -> bool:
+        now = timezone.now() - timedelta(minutes=30)
+        return CodigosDeValidacao.objects.filter(codigo=codigo, created_at__gte=now).exists()
+
+    def save(self, **kwargs) -> None:
+        if self._state.adding:
+            self.codigo = gerar_codigo(numerico=True)
+        return super().save(**kwargs)
+
+    class Meta:
+        verbose_name = "Código de validação"
+        verbose_name_plural = "Códigos de validação"
 
     def __str__(self) -> str:
         return f'SMS: {self.sms}|E-mail: {self.email}'
@@ -86,7 +131,7 @@ class Carteira(BaseModel):
 
     @transaction.atomic
     def transferir(self, valor: Decimal) -> bool:
-        raise NotImplementedError(f'Transferência de {valor} R$ não for realizada.')
+        raise NotImplementedError(f'Ainda não estamos disponibilizando esse serviço.')
 
     def __str__(self):
         try:
@@ -104,7 +149,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     data_nascimento = models.DateField('Data de nascimento')
     telefone = models.CharField('Telefone', max_length=11)
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, related_name='usuarios')
-    permissoes = models.ForeignKey(PermissoesNotificacao, on_delete=models.SET_NULL, null=True, related_name='usuarios')
+    permissoes = models.OneToOneField(PermissoesNotificacao, on_delete=models.SET_NULL, null=True, related_name='usuarios')
     carteira = models.OneToOneField(Carteira, on_delete=models.CASCADE, blank=True, related_name='usuario')
 
     is_staff = models.BooleanField(default=False)
