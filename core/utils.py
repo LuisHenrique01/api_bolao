@@ -1,6 +1,7 @@
 import os
 import re
 from secrets import token_hex
+from django.core.exceptions import ValidationError
 
 
 def get_taxa_banca() -> float:
@@ -13,7 +14,7 @@ def gerar_codigo() -> str:
     return token_hex(8).upper()
 
 
-def cpf_valido(cpf: str) -> bool:
+def cpf_valido(cpf: str, raise_exception: bool = True) -> bool:
     """
     Valida um CPF, retornando True se for válido ou False caso contrário.
 
@@ -44,8 +45,11 @@ def cpf_valido(cpf: str) -> bool:
     # Verifica se os dígitos verificadores estão corretos
     if cpf[-2:] == f'{digito_1}{digito_2}':
         return True
-    else:
-        return False
+
+    if raise_exception:
+        raise ValidationError(f"O CPF {cpf} inválido.")
+
+    return False
 
 
 def formato_cpf_valido(cpf: str) -> bool:

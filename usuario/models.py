@@ -8,6 +8,7 @@ from django.db import models, transaction
 
 from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException
 from core.models import BaseModel, HistoricoTransacao
+from core.utils import cpf_valido
 
 from .managers import UserManager
 
@@ -98,13 +99,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     email = models.EmailField('E-mail', unique=True)
-    cpf = models.CharField('CPF', max_length=14, unique=True, editable=False)
+    cpf = models.CharField('CPF', max_length=14, unique=True, validators=[cpf_valido])
     nome = models.CharField('Nome', max_length=150)
     data_nascimento = models.DateField('Data de nascimento')
     telefone = models.CharField('Telefone', max_length=11)
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, related_name='usuarios')
     permissoes = models.ForeignKey(PermissoesNotificacao, on_delete=models.SET_NULL, null=True, related_name='usuarios')
-    carteira = models.OneToOneField(Carteira, on_delete=models.CASCADE)
+    carteira = models.OneToOneField(Carteira, on_delete=models.CASCADE, blank=True, related_name='usuario')
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -144,7 +145,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         return self.carteira.saldo
     
     def save(self, **kwargs):
-        self.carteira = Carteira.objects.create()
+        if self._state.adding:
+            self.carteira = Carteira.objects.create()
+            self.set_password(self.password)
         return super().save(**kwargs)
 
     def __str__(self) -> str:
