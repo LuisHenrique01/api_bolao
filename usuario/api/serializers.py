@@ -1,4 +1,3 @@
-import os
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 
@@ -35,7 +34,8 @@ class CriarUsuarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
-        fields = ['email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone', 'endereco', 'permissoes', 'carteira']
+        fields = ['email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
+                  'endereco', 'permissoes', 'carteira']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):

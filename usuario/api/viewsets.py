@@ -11,6 +11,7 @@ from usuario.api.serializers import CriarUsuarioSerializer, UsuarioNotificacaoSe
 
 from usuario.models import CodigosDeValidacao, Usuario
 
+
 class CriarUsuarioViewSet(ViewSet):
 
     queryset = Usuario.objects.all()

@@ -48,7 +48,8 @@ class PermissoesNotificacao(BaseModel):
 
 class CodigosDeValidacao(BaseModel):
 
-    permissao = models.ForeignKey(PermissoesNotificacao, verbose_name='Permissão', on_delete=models.CASCADE, related_name='codigos')
+    permissao = models.ForeignKey(PermissoesNotificacao, verbose_name='Permissão',
+                                  on_delete=models.CASCADE, related_name='codigos')
     tipo = models.CharField('Tipo', max_length=50)
     codigo = models.CharField('Código', max_length=50, blank=True)
     confirmado = models.BooleanField('Confirmado', default=False)
@@ -131,7 +132,7 @@ class Carteira(BaseModel):
 
     @transaction.atomic
     def transferir(self, valor: Decimal) -> bool:
-        raise NotImplementedError(f'Ainda não estamos disponibilizando esse serviço.')
+        raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
 
     def __str__(self):
         try:
@@ -149,7 +150,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     data_nascimento = models.DateField('Data de nascimento')
     telefone = models.CharField('Telefone', max_length=11)
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, related_name='usuarios')
-    permissoes = models.OneToOneField(PermissoesNotificacao, on_delete=models.SET_NULL, null=True, related_name='usuarios')
+    permissoes = models.OneToOneField(PermissoesNotificacao, on_delete=models.SET_NULL,
+                                      null=True, related_name='usuarios')
     carteira = models.OneToOneField(Carteira, on_delete=models.CASCADE, blank=True, related_name='usuario')
 
     is_staff = models.BooleanField(default=False)
@@ -188,7 +190,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     @property
     def saldo(self) -> str:
         return self.carteira.saldo
-    
+
     def save(self, **kwargs):
         if self._state.adding:
             self.carteira = Carteira.objects.create()
