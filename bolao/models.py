@@ -107,6 +107,8 @@ class Bolao(BaseModel):
         valor_banca = Decimal(self.taxa_banca / 100).quantize(Decimal('.01')) * total_bolao
         valor_criador = Decimal(self.taxa_criador / 100).quantize(Decimal('.01')) * total_bolao
         self.criador.carteira.depositar(valor_criador)
+        banca = Usuario.objects.get(id=os.getenv('ID_CARTEIRA_BANCA'))
+        banca.carteira.depositar(valor_banca)
         return total_bolao - (valor_banca + valor_criador)
 
     def pagar_vencedores(self, vencedores: List[Usuario]):

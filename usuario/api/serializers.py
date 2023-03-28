@@ -101,7 +101,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
-        fields = ['email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
+        fields = ['id', 'email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
                   'endereco', 'permissoes', 'carteira']
         read_only = ['id', 'cpf', 'nome', 'data_nascimento']
         extra_kwargs = {'password': {'write_only': True}}
