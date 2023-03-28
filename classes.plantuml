@@ -1,0 +1,310 @@
+@startuml classes
+set namespaceSeparator none
+class "API" as core.network.football.API #aquamarine {
+  api_using : str
+  headers : dict
+  url : str
+  atualizar_resultados(jogos: Union[QuerySet, Jogo], many: bool) -> bool
+  buscar_e_salvar_competicoes()
+  buscar_e_salvar_jogos(campeonatos: List[Campeonato]) -> bool
+  buscar_jogos(campeonato: Campeonato)
+  get_current(seasons: List[dict]) -> str
+  obter_vencedor(placar_casa: int, placar_fora: int) -> str
+  salvar_jogo(jogo: dict, campeonato: Campeonato) -> Jogo
+  salvar_resultdo(data: dict, jogo: Jogo)
+  salvar_time(id_externo: int, nome: str, logo: str)
+  set_rapid_api()
+}
+class "<color:red>BaseException</color>" as core.custom_exception.BaseException #antiquewhite {
+  serializer
+}
+class "BaseModel" as core.models.BaseModel #antiquewhite {
+  created_at : DateTimeField
+  id : UUIDField
+  updated_at : DateTimeField
+}
+class "Bolao" as bolao.models.Bolao #aliceblue {
+  codigo : CharField
+  criador : ForeignKey
+  estorno : BooleanField
+  jogos : ManyToManyField
+  status : CharField
+  status : str
+  taxa_banca : FloatField
+  taxa_criador : FloatField
+  valor_palpite : DecimalField
+  buscar_vencedores()
+  cancelar_bolao()
+  dividir_entre_banca_e_criador()
+  estornar_bolao()
+  finalizar_bolao()
+  pagar_vencedores(vencedores: List[Usuario])
+  retirar_banca_e_criador() -> Decimal
+}
+class "Campeonato" as bolao.models.Campeonato #aliceblue {
+  ativo : BooleanField
+  id_externo : CharField
+  logo : URLField
+  nome : CharField
+  pais : CharField
+  temporada_atual : CharField
+  tipo : CharField
+}
+class "Carteira" as usuario.models.Carteira #burlywood {
+  bloqueado : BooleanField
+  pix : CharField
+  saldo
+  saldo : Decimal
+  depositar(valor: Decimal, externo: bool) -> None
+  deposito_valido(valor: Decimal, externo: bool) -> bool
+  saque(valor: Decimal, externo: bool) -> None
+  saque_valido(valor: Decimal, externo: bool) -> bool
+  {abstract}transferir(valor: Decimal) -> bool
+}
+class "CarteiraSerializer" as usuario.api.serializers.CarteiraSerializer #cadetblue {
+}
+class "CodigosDeValidacao" as usuario.models.CodigosDeValidacao #burlywood {
+  codigo : CharField
+  codigo : str
+  confirmado : BooleanField
+  permissao : ForeignKey
+  tipo : CharField
+  save() -> None
+  valido(codigo: str) -> bool
+}
+class "CriarUsuarioSerializer" as usuario.api.serializers.CriarUsuarioSerializer #cadetblue {
+  carteira
+  endereco
+  permissoes
+  create(validated_data)
+}
+class "CriarUsuarioViewSet" as usuario.api.viewsets.CriarUsuarioViewSet #cadetblue {
+  permission_classes : list
+  queryset
+  codigo_recuperacao_senha(request)
+  confirmar_codigo(request)
+  create(request)
+  get_token(user)
+  get_user(data)
+  recuperar_senha(request)
+}
+class "<color:red>DepositoInvalidoException</color>" as core.custom_exception.DepositoInvalidoException #antiquewhite {
+  message : str
+}
+class "Endereco" as usuario.models.Endereco #burlywood {
+  bairro : CharField
+  cep : CharField
+  cidade : CharField
+  complemento : CharField
+  estado : CharField
+  numero : CharField
+  rua : CharField
+}
+class "EnderecoSerializer" as usuario.api.serializers.EnderecoSerializer #cadetblue {
+}
+class "HistoricoTransacao" as core.models.HistoricoTransacao #antiquewhite {
+  carteira : ForeignKey
+  externo : BooleanField
+  pix : CharField
+  tipo : CharField
+  valor : DecimalField
+  criar_registro(carteira, valor: Decimal, externo: bool, pix: str)
+}
+class "Jogo" as bolao.models.Jogo #aliceblue {
+  campeonato : ForeignKey
+  data : DateTimeField
+  id_externo : CharField
+  placar
+  placar_casa : IntegerField
+  placar_fora : IntegerField
+  status : CharField
+  time_casa : ForeignKey
+  time_fora : ForeignKey
+  vencedor : CharField
+  acertou_palpite(casa: int, fora: int) -> bool
+}
+class "Meta" as core.models.BaseModel.Meta #chartreuse {
+  abstract : bool
+}
+class "Meta" as bolao.forms.PalpitePlacarForm.Meta #chocolate {
+  exclude : tuple
+  model
+}
+class "Meta" as bolao.models.Campeonato.Meta #coral {
+  ordering : list
+  verbose_name : str
+  verbose_name_plural : str
+}
+class "Meta" as bolao.models.Time.Meta #coral {
+  ordering : list
+  verbose_name : str
+  verbose_name_plural : str
+}
+class "Meta" as bolao.models.Jogo.Meta #coral {
+  ordering : list
+  verbose_name : str
+  verbose_name_plural : str
+}
+class "Meta" as bolao.models.Bolao.Meta #coral {
+  verbose_name : str
+  verbose_name_plural : str
+}
+class "Meta" as bolao.models.Palpite.Meta #coral {
+  verbose_name : str
+  verbose_name_plural : str
+}
+class "Meta" as bolao.models.PalpitePlacar.Meta #coral {
+  verbose_name : str
+  verbose_name_plural : str
+}
+class "Meta" as usuario.models.PermissoesNotificacao.Meta #cornflowerblue {
+  verbose_name : str
+  verbose_name_plural : str
+}
+class "Meta" as usuario.models.CodigosDeValidacao.Meta #cornflowerblue {
+  verbose_name : str
+  verbose_name_plural : str
+}
+class "Meta" as usuario.models.Endereco.Meta #cornflowerblue {
+  verbose_name : str
+  verbose_name_plural : str
+}
+class "Meta" as usuario.models.Usuario.Meta #cornflowerblue {
+  verbose_name : str
+  verbose_name_plural : str
+}
+class "Meta" as usuario.api.serializers.EnderecoSerializer.Meta #cadetblue {
+  fields : str
+  model
+}
+class "Meta" as usuario.api.serializers.PermissoesSerializer.Meta #cadetblue {
+  fields : str
+  model
+}
+class "Meta" as usuario.api.serializers.CarteiraSerializer.Meta #cadetblue {
+  fields : str
+  model
+}
+class "Meta" as usuario.api.serializers.CriarUsuarioSerializer.Meta #cadetblue {
+  extra_kwargs : dict
+  fields : list
+  model
+  read_only : list
+}
+class "Meta" as usuario.api.serializers.UsuarioSerializer.Meta #cadetblue {
+  fields : list
+  model
+  read_only : list
+}
+class "Palpite" as bolao.models.Palpite #aliceblue {
+  acertou
+  bolao : ForeignKey
+  usuario : ForeignKey
+  clean() -> None
+  save() -> None
+}
+class "PalpitePlacar" as bolao.models.PalpitePlacar #aliceblue {
+  acertou
+  jogo : ForeignKey
+  palpite : ForeignKey
+  placar_casa : IntegerField
+  placar_fora : IntegerField
+}
+class "PalpitePlacarForm" as bolao.forms.PalpitePlacarForm #aliceblue {
+}
+class "PermissoesNotificacao" as usuario.models.PermissoesNotificacao #burlywood {
+  email : BooleanField
+  email_verificado : BooleanField
+  sms : BooleanField
+  sms_verificado : BooleanField
+  enviar_validacao_email() -> str
+  {abstract}enviar_validacao_sms() -> str
+}
+class "PermissoesSerializer" as usuario.api.serializers.PermissoesSerializer #cadetblue {
+}
+class "<color:red>SaldoInvalidoException</color>" as core.custom_exception.SaldoInvalidoException #antiquewhite {
+  message : str
+}
+class "Time" as bolao.models.Time #aliceblue {
+  id_externo : CharField
+  logo : URLField
+  nome : CharField
+}
+class "UserManager" as usuario.managers.UserManager #burlywood {
+  use_in_migrations : bool
+  create_superuser(email, password)
+  create_user(email, password)
+}
+class "Usuario" as usuario.models.Usuario #burlywood {
+  REQUIRED_FIELDS : list
+  USERNAME_FIELD : str
+  carteira
+  carteira : OneToOneField
+  cpf : CharField
+  cpf_formatado
+  cpf_marcarado
+  data_nascimento : DateField
+  date_joined : DateTimeField
+  email : EmailField
+  endereco : ForeignKey
+  id : UUIDField
+  is_active : BooleanField
+  is_staff : BooleanField
+  nome : CharField
+  nome_formatado
+  objects
+  permissoes : OneToOneField
+  saldo
+  telefone : CharField
+  telefone_formatado
+  envioNotificacaoValido(tipo: str) -> bool
+  save()
+}
+class "<color:red>UsuarioNaoEncontrado</color>" as core.custom_exception.UsuarioNaoEncontrado #antiquewhite {
+  message : str
+}
+class "UsuarioNotificacaoSerializer" as usuario.api.serializers.UsuarioNotificacaoSerializer #cadetblue {
+  email : EmailField
+  sms : CharField
+  enviar_codigo()
+}
+class "UsuarioNovaSenhaSerializer" as usuario.api.serializers.UsuarioNovaSenhaSerializer #cadetblue {
+  codigo : CharField
+  email : EmailField
+  nova_senha : CharField
+  senha_atual : CharField
+  mudar_senha()
+  validate(attrs)
+}
+class "UsuarioSerializer" as usuario.api.serializers.UsuarioSerializer #cadetblue {
+  carteira
+  endereco
+  permissoes
+}
+bolao.models.Bolao --|> core.models.BaseModel
+bolao.models.Campeonato --|> core.models.BaseModel
+bolao.models.Jogo --|> core.models.BaseModel
+bolao.models.Palpite --|> core.models.BaseModel
+bolao.models.Time --|> core.models.BaseModel
+core.custom_exception.DepositoInvalidoException --|> core.custom_exception.BaseException
+core.custom_exception.SaldoInvalidoException --|> core.custom_exception.BaseException
+core.custom_exception.UsuarioNaoEncontrado --|> core.custom_exception.BaseException
+core.models.HistoricoTransacao --|> core.models.BaseModel
+usuario.models.Carteira --|> core.models.BaseModel
+usuario.models.CodigosDeValidacao --|> core.models.BaseModel
+usuario.models.Endereco --|> core.models.BaseModel
+usuario.models.PermissoesNotificacao --|> core.models.BaseModel
+bolao.models.PalpitePlacar --* bolao.forms.PalpitePlacarForm.Meta : model
+usuario.api.serializers.CarteiraSerializer --* usuario.api.serializers.CriarUsuarioSerializer : carteira
+usuario.api.serializers.CarteiraSerializer --* usuario.api.serializers.UsuarioSerializer : carteira
+usuario.api.serializers.EnderecoSerializer --* usuario.api.serializers.CriarUsuarioSerializer : endereco
+usuario.api.serializers.EnderecoSerializer --* usuario.api.serializers.UsuarioSerializer : endereco
+usuario.api.serializers.PermissoesSerializer --* usuario.api.serializers.CriarUsuarioSerializer : permissoes
+usuario.api.serializers.PermissoesSerializer --* usuario.api.serializers.UsuarioSerializer : permissoes
+usuario.managers.UserManager --* usuario.models.Usuario : objects
+usuario.models.Carteira --* usuario.api.serializers.CarteiraSerializer.Meta : model
+usuario.models.Endereco --* usuario.api.serializers.EnderecoSerializer.Meta : model
+usuario.models.PermissoesNotificacao --* usuario.api.serializers.PermissoesSerializer.Meta : model
+usuario.models.Usuario --* usuario.api.serializers.CriarUsuarioSerializer.Meta : model
+usuario.models.Usuario --* usuario.api.serializers.UsuarioSerializer.Meta : model
+@enduml

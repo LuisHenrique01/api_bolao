@@ -7,7 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import PermissionDenied
 
 from core.custom_exception import UsuarioNaoEncontrado
-from usuario.api.serializers import CriarUsuarioSerializer, UsuarioNotificacaoSerializer, UsuarioNovaSenhaSerializer
+from usuario.api.serializers import (CriarUsuarioSerializer, UsuarioNotificacaoSerializer, UsuarioNovaSenhaSerializer,
+                                     UsuarioSerializer)
 
 from usuario.models import CodigosDeValidacao, Usuario
 
@@ -38,7 +39,7 @@ class CriarUsuarioViewSet(ViewSet):
         except Exception:
             return Response({'message': 'Erro interno no servidor.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['POST'], url_path='codigo-recuperacao-senha')
     def codigo_recuperacao_senha(self, request):
         try:
             serializer = UsuarioNotificacaoSerializer(data=request.data)
@@ -51,19 +52,25 @@ class CriarUsuarioViewSet(ViewSet):
         except Exception:
             return Response({'message': 'Erro interno no servidor.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['POST'], url_path='confirmar-codigo')
     def confirmar_codigo(self, request):
         try:
             if CodigosDeValidacao.valido(request.data['codigo']):
                 codigo = CodigosDeValidacao.objects.get(codigo=request.data['codigo'])
                 codigo.confirmado = True
+                if codigo.tipo == 'email':
+                    codigo.permissao.email_verificado = True
+                    codigo.permissao.save()
+                if codigo.tipo == 'sms':
+                    codigo.permissao.sms_verificado = True
+                    codigo.permissao.save()
                 codigo.save()
                 return Response({'message': 'Sucesso!'}, status=status.HTTP_200_OK)
             return Response({'message': 'Código inválido.'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception:
             return Response({'message': 'Erro interno no servidor.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['POST'], url_path='recuperar-senha')
     def recuperar_senha(self, request):
         try:
             serializer = UsuarioNovaSenhaSerializer(data=request.data)
@@ -76,3 +83,31 @@ class CriarUsuarioViewSet(ViewSet):
             return Response(e.serializer, status=status.HTTP_404_NOT_FOUND)
         except Exception:
             return Response({'message': 'Erro interno no servidor.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UsuarioViewSet(ViewSet):
+
+    queryset = Usuario.objects.all()
+
+    def list(self, request):
+        serializer = UsuarioSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['PATCH'], url_path='editar')
+    def editar(self, request):
+        try:
+            serializer = UsuarioSerializer(request.user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({'message': 'Sucesso!'}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'message': 'Erro interno no servidor.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['POST'], url_path='logout')
+    def logout(self, request):
+        try:
+            token = RefreshToken(request.data["refresh"])
+            token.blacklist()
+            return Response({'message': 'Sucesso!'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)

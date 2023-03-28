@@ -151,7 +151,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     telefone = models.CharField('Telefone', max_length=11)
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, related_name='usuarios')
     permissoes = models.OneToOneField(PermissoesNotificacao, on_delete=models.SET_NULL,
-                                      null=True, related_name='usuarios')
+                                      null=True, related_name='usuario')
     carteira = models.OneToOneField(Carteira, on_delete=models.CASCADE, blank=True, related_name='usuario')
 
     is_staff = models.BooleanField(default=False)

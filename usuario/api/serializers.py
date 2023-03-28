@@ -36,11 +36,12 @@ class CriarUsuarioSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = ['email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
                   'endereco', 'permissoes', 'carteira']
+        read_only = ['id']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         endereco_instancia = EnderecoSerializer(data=validated_data['endereco'])
-        permissoes_instancia = PermissoesSerializer(data=validated_data['endereco'])
+        permissoes_instancia = PermissoesSerializer(data=validated_data['permissoes'])
         endereco_instancia.is_valid(raise_exception=True)
         permissoes_instancia.is_valid(raise_exception=True)
         validated_data['endereco'] = endereco_instancia.save()
@@ -91,3 +92,27 @@ class UsuarioNovaSenhaSerializer(serializers.Serializer):
         if not attrs['codigo'] and not attrs['email']:
             raise serializers.ValidationError("Para mudar a senha você deve preencher com o seu email.")
         return super().validate(attrs)
+
+
+class UsuarioSerializer(serializers.ModelSerializer):
+    endereco = EnderecoSerializer()
+    permissoes = PermissoesSerializer()
+    carteira = CarteiraSerializer(read_only=True)
+
+    class Meta:
+        model = Usuario
+        fields = ['email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
+                  'endereco', 'permissoes', 'carteira']
+        read_only = ['id', 'cpf', 'nome', 'data_nascimento']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def update(self, instance, validated_data):
+        if endereco := validated_data.get('endereco'):
+            endereco_instancia = EnderecoSerializer(data=endereco, partial=True)
+            endereco_instancia.is_valid(raise_exception=True)
+            validated_data['endereco'] = endereco_instancia.save()
+        if permissoes := validated_data.get('permissoes'):
+            permissoes_instancia = PermissoesSerializer(data=permissoes, partial=True)
+            permissoes_instancia.is_valid(raise_exception=True)
+            validated_data['permissoes'] = permissoes_instancia.save()
+        return super().update(instance, validated_data)
