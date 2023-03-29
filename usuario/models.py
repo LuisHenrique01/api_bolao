@@ -26,12 +26,12 @@ class PermissoesNotificacao(BaseModel):
     def enviar_validacao_email(self) -> str:
         codigo = CodigosDeValidacao(permissao=self, tipo='email')
         codigo.save()
-        if self.data['email']:
+        if self.usuario.email:
             send_mail(
                 'Código para recuperação de senha.',
                 f'Seu código de verificação é {codigo.codigo}.\n\n Seu código expira em 30 minutos.',
                 os.getenv('EMAIL'),
-                [self.data['email']],
+                [self.usuario.email],
                 fail_silently=False,
             )
 
@@ -69,7 +69,7 @@ class CodigosDeValidacao(BaseModel):
         verbose_name_plural = "Códigos de validação"
 
     def __str__(self) -> str:
-        return f'SMS: {self.sms}|E-mail: {self.email}'
+        return f'Código: {self.codigo}|Confirmado: {self.confirmado}'
 
 
 class Endereco(BaseModel):

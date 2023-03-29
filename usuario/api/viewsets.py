@@ -10,7 +10,7 @@ from core.custom_exception import UsuarioNaoEncontrado
 from usuario.api.serializers import (CriarUsuarioSerializer, UsuarioNotificacaoSerializer, UsuarioNovaSenhaSerializer,
                                      UsuarioSerializer)
 
-from usuario.models import CodigosDeValidacao, Usuario
+from usuario.models import Carteira, CodigosDeValidacao, Usuario
 
 
 class CriarUsuarioViewSet(ViewSet):
@@ -45,6 +45,7 @@ class CriarUsuarioViewSet(ViewSet):
             serializer = UsuarioNotificacaoSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.enviar_codigo()
+            return Response({'message': 'Sucesso!'}, status=status.HTTP_200_OK)
         except UsuarioNaoEncontrado as e:
             return Response(e.serializer, status=status.HTTP_404_NOT_FOUND)
         except NotImplementedError as e:
@@ -109,5 +110,14 @@ class UsuarioViewSet(ViewSet):
             token = RefreshToken(request.data["refresh"])
             token.blacklist()
             return Response({'message': 'Sucesso!'}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response({'message': 'Erro interno no servidor.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CarteiraViewSet(ViewSet):
+
+    queryset = Carteira.objects.all()
+
+    def list(self, request):
+        serializer = UsuarioSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)

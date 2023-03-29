@@ -55,10 +55,10 @@ class UsuarioNotificacaoSerializer(serializers.Serializer):
 
     def enviar_codigo(self):
         try:
-            if self.validated_data["email"]:
+            if self.validated_data.get("email"):
                 usuario = Usuario.objects.get(email=self.validated_data['email'])
                 usuario.permissoes.enviar_validacao_email()
-            if self.validated_data["sms"]:
+            if self.validated_data.get("sms"):
                 usuario = Usuario.objects.get(telefone=self.validated_data['sms'])
                 usuario.permissoes.enviar_validacao_sms()
         except ObjectDoesNotExist:
@@ -73,14 +73,15 @@ class UsuarioNovaSenhaSerializer(serializers.Serializer):
 
     def mudar_senha(self):
         try:
-            if self.validated_data['email']:
+            if self.validated_data.get('email'):
                 usuario = Usuario.objects.get(email=self.validated_data['email'])
-                if usuario.check_password(self.validated_data['senha_atual']):
+                if usuario.check_password(self.validated_data.get('senha_atual')):
                     usuario.set_password(self.validated_data['nova_senha'])
                     return usuario.save()
                 raise PermissionDenied()
 
-            usuario = Usuario.objects.get(permissoes__codigos__codigo=self.validated_data['codigo'])
+            usuario = Usuario.objects.get(permissoes__codigos__codigo=self.validated_data['codigo'],
+                                          permissoes__codigos__confirmado=True)
             usuario.set_password(self.validated_data['nova_senha'])
             return usuario.save()
         except ObjectDoesNotExist:

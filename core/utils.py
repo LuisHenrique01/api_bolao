@@ -12,8 +12,8 @@ def get_taxa_banca() -> float:
 def gerar_codigo(numerico: bool = False) -> str:
     """Gera um token aleatório."""
     if numerico:
-        return token_hex(6).upper()
-    return ''.join((str(randbelow(9)) for _ in range(6)))
+        return ''.join((str(randbelow(9)) for _ in range(6)))
+    return token_hex(3).upper()
 
 
 def cpf_valido(cpf: str, raise_exception: bool = True) -> bool:
