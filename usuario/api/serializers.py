@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from core.models import HistoricoTransacao
 
 from usuario.models import Carteira, Endereco, PermissoesNotificacao, Usuario
 from core.custom_exception import UsuarioNaoEncontrado
@@ -24,6 +25,7 @@ class CarteiraSerializer(serializers.ModelSerializer):
     class Meta:
         model = Carteira
         fields = '__all__'
+        readonly = ['saldo', 'bloqueado']
 
 
 class CriarUsuarioSerializer(serializers.ModelSerializer):
@@ -65,16 +67,41 @@ class UsuarioNotificacaoSerializer(serializers.Serializer):
             raise UsuarioNaoEncontrado()
 
 
+class UsuarioSerializer(serializers.ModelSerializer):
+    endereco = EnderecoSerializer()
+    permissoes = PermissoesSerializer()
+    carteira = CarteiraSerializer(read_only=True)
+
+    class Meta:
+        model = Usuario
+        fields = ['id', 'email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
+                  'endereco', 'permissoes', 'carteira']
+        read_only = ['id', 'cpf', 'data_nascimento']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def update(self, instance, validated_data):
+        if endereco := validated_data.get('endereco'):
+            endereco_instancia = EnderecoSerializer(data=endereco, partial=True)
+            endereco_instancia.is_valid(raise_exception=True)
+            validated_data['endereco'] = endereco_instancia.save()
+        if permissoes := validated_data.get('permissoes'):
+            permissoes_instancia = PermissoesSerializer(data=permissoes, partial=True)
+            permissoes_instancia.is_valid(raise_exception=True)
+            validated_data['permissoes'] = permissoes_instancia.save()
+        return super().update(instance, validated_data)
+
+
 class UsuarioNovaSenhaSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=False)
+    id = serializers.UUIDField(required=False)
+    usuario = UsuarioSerializer(required=False)
     codigo = serializers.CharField(required=False)
     senha_atual = serializers.CharField(required=False)
     nova_senha = serializers.CharField()
 
     def mudar_senha(self):
         try:
-            if self.validated_data.get('email'):
-                usuario = Usuario.objects.get(email=self.validated_data['email'])
+            if usuario := self.validated_data.get('id'):
+                usuario = Usuario.objects.get(id=self.validated_data['id'])
                 if usuario.check_password(self.validated_data.get('senha_atual')):
                     usuario.set_password(self.validated_data['nova_senha'])
                     return usuario.save()
@@ -88,32 +115,15 @@ class UsuarioNovaSenhaSerializer(serializers.Serializer):
             raise UsuarioNaoEncontrado()
 
     def validate(self, attrs):
-        if not attrs['codigo'] and not attrs['senha_atual']:
+        if not attrs.get('codigo') and not attrs.get('senha_atual'):
             raise serializers.ValidationError("Para mudar a senha você deve preencher com a senha atual.")
-        if not attrs['codigo'] and not attrs['email']:
+        if not attrs.get('codigo') and not attrs.get('id'):
             raise serializers.ValidationError("Para mudar a senha você deve preencher com o seu email.")
         return super().validate(attrs)
 
 
-class UsuarioSerializer(serializers.ModelSerializer):
-    endereco = EnderecoSerializer()
-    permissoes = PermissoesSerializer()
-    carteira = CarteiraSerializer(read_only=True)
+class HistoricoTransacaoSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Usuario
-        fields = ['id', 'email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
-                  'endereco', 'permissoes', 'carteira']
-        read_only = ['id', 'cpf', 'nome', 'data_nascimento']
-        extra_kwargs = {'password': {'write_only': True}}
-
-    def update(self, instance, validated_data):
-        if endereco := validated_data.get('endereco'):
-            endereco_instancia = EnderecoSerializer(data=endereco, partial=True)
-            endereco_instancia.is_valid(raise_exception=True)
-            validated_data['endereco'] = endereco_instancia.save()
-        if permissoes := validated_data.get('permissoes'):
-            permissoes_instancia = PermissoesSerializer(data=permissoes, partial=True)
-            permissoes_instancia.is_valid(raise_exception=True)
-            validated_data['permissoes'] = permissoes_instancia.save()
-        return super().update(instance, validated_data)
+        model = HistoricoTransacao
+        fields = '__all__'
