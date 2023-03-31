@@ -1,9 +1,12 @@
+import os
+from decimal import Decimal
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from core.models import HistoricoTransacao
 
 from usuario.models import Carteira, Endereco, PermissoesNotificacao, Usuario
 from core.custom_exception import UsuarioNaoEncontrado
+from core.utils import qual_tipo_chave_pix
 
 
 class EnderecoSerializer(serializers.ModelSerializer):
@@ -22,10 +25,37 @@ class PermissoesSerializer(serializers.ModelSerializer):
 
 class CarteiraSerializer(serializers.ModelSerializer):
 
+    valor = serializers.DecimalField(max_digits=9, decimal_places=2, required=False)
+    pix = serializers.CharField(required=False)
+
     class Meta:
         model = Carteira
         fields = '__all__'
         readonly = ['saldo', 'bloqueado']
+
+    def validate_valor(self, value):
+        if 'pix' in self.initial_data:
+            valor_minimo = Decimal(os.getenv('MIN_SAQUE'))
+        else:
+            valor_minimo = Decimal(os.getenv('MIN_DEPOSITO'))
+        if value < valor_minimo:
+            raise serializers.ValidationError('Valor abaixo do permitido.')
+        return value
+
+    def validate_pix(self, value):
+        PIX_ACEITOS = ("e-mail", "CPF", "telefone", "aleatorio")
+        if qual_tipo_chave_pix(value) not in PIX_ACEITOS:
+            raise serializers.ValidationError(f'Chave PIX inválida, acitamos apenas as seguintes chaves {PIX_ACEITOS}!')
+        return value
+
+    def depositar(self, carteira: Carteira):
+        qr_code = carteira.solicitar_cash_in(self.validated_data['valor'])
+        return qr_code
+
+    def sacar(self, carteira: Carteira):
+        qr_code = carteira.solicitar_cash_out(self.validated_data['valor'])
+        return qr_code
+
 
 
 class CriarUsuarioSerializer(serializers.ModelSerializer):

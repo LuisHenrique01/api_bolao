@@ -79,7 +79,7 @@ def qual_tipo_chave_pix(chave_pix: str) -> str:
     if formato_email_valido(chave_pix):
         return "e-mail"
 
-    if cpf_valido(chave_pix):
+    if cpf_valido(chave_pix, raise_exception=False):
         return "CPF"
 
     if formato_telefone_valido(chave_pix) or \

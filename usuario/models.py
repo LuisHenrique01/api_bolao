@@ -130,9 +130,15 @@ class Carteira(BaseModel):
     def saldo(self):
         return self.saldo
 
-    @transaction.atomic
-    def transferir(self, valor: Decimal) -> bool:
-        raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
+    def solicitar_cash_in(self, valor: Decimal) -> bool:
+        if self.deposito_valido(valor, externo=True):
+            raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
+        raise DepositoInvalidoException()
+
+    def solicitar_cash_out(self, valor: Decimal) -> bool:
+        if self.saque_valido(valor, externo=True):
+            raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
+        raise SaldoInvalidoException()
 
     def __str__(self):
         try:

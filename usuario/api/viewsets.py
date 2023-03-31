@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import PermissionDenied
 
-from core.custom_exception import UsuarioNaoEncontrado
+from core.custom_exception import SaldoInvalidoException, UsuarioNaoEncontrado, DepositoInvalidoException
 from core.models import HistoricoTransacao
 from usuario.api.serializers import (CriarUsuarioSerializer, UsuarioNotificacaoSerializer, UsuarioNovaSenhaSerializer,
                                      UsuarioSerializer, CarteiraSerializer, HistoricoTransacaoSerializer)
@@ -121,6 +121,30 @@ class CarteiraViewSet(ViewSet):
     def list(self, request):
         serializer = CarteiraSerializer(request.user.carteira)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['POST'], url_path='depositar')
+    def depositar(self, request):
+        try:
+            serializer = CarteiraSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            qr_code = serializer.depositar(request.user.carteira)
+            return Response(qr_code, status=status.HTTP_200_OK)
+        except DepositoInvalidoException as e:
+            return Response(e.serializer, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except NotImplementedError as e:
+            return Response({'message': str(e)}, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+    @action(detail=False, methods=['POST'], url_path='sacar')
+    def sacar(self, request):
+        try:
+            serializer = CarteiraSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            qr_code = serializer.sacar(request.user.carteira)
+            return Response(qr_code, status=status.HTTP_200_OK)
+        except SaldoInvalidoException as e:
+            return Response(e.serializer, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except NotImplementedError as e:
+            return Response({'message': str(e)}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
 
 class HistoricoTransfereciaViewSet(ReadOnlyModelViewSet):
