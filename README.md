@@ -10,7 +10,7 @@ O grande desafio deste projeto é responder à seguinte indagação: será poss�
 
 ## Objetivos
 
-O objetivo deste projeto é desenvolver um software capaz de cadastrar usuários que, por sua vez, poderão criar ou participar de bolões. Cada usuário terá sua própria carteira com saldo, possibilitando-o a cadastrar-se em bolões e inserir seus palpites. Ao cadastrar um bolão, haverá duas modalidades de escolha: resultado simples (casa, fora, empate) ou placar exato (casa ≥ 0 ≤ fora). O bolão poderá também incluir um ou mais jogos.
+O objetivo deste projeto é desenvolver um software capaz de cadastrar usuários que, por sua vez, poderão criar ou participar de bolões. Cada usuário terá sua própria carteira com saldo, possibilitando-o a cadastrar-se em bolões e inserir seus bilhetes. Ao cadastrar um bolão, haverá duas modalidades de escolha: resultado simples (casa, fora, empate) ou placar exato (casa ≥ 0 ≤ fora). O bolão poderá também incluir um ou mais jogos.
 
 ## Justificativa
 
@@ -18,7 +18,7 @@ As apostas esportivas têm ganhado cada vez mais espaço no mercado mundial, com
 
 No entanto, mesmo com o crescente interesse do público nesse mercado, ainda há nichos pouco explorados, como é o caso das apostas esportivas via bolões. Essa prática é comum entre amigos, familiares e colegas de trabalho, que se juntam para apostar em resultados de jogos de futebol e outros esportes. Contudo, nem sempre é fácil organizar e gerenciar esses bolões, o que acaba limitando o potencial de crescimento desse mercado.
 
-Uma das principais dificuldades dos bolões é a gestão dos palpites e pagamentos, além de garantir a transparência e a segurança nas transações financeiras. Para atender a essa demanda, empresas especializadas em apostas esportivas têm investido em soluções tecnológicas que facilitam a organização e administração dos bolões, tornando a prática mais acessível e segura.
+Uma das principais dificuldades dos bolões é a gestão dos bilhetes e pagamentos, além de garantir a transparência e a segurança nas transações financeiras. Para atender a essa demanda, empresas especializadas em apostas esportivas têm investido em soluções tecnológicas que facilitam a organização e administração dos bolões, tornando a prática mais acessível e segura.
 
 Assim, é possível perceber que o mercado de apostas esportivas é bastante amplo e vem se transformando com o avanço da tecnologia e da regulamentação. Ainda há muito a ser explorado, especialmente nos nichos pouco desenvolvidos, como os bolões entre amigos e conhecidos. Com soluções inovadoras e acessíveis, é possível democratizar o acesso.
 

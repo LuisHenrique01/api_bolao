@@ -1,7 +1,7 @@
 from django.test import TestCase
 from decimal import Decimal
 from django.core.exceptions import ValidationError
-from .models import Campeonato, Time, Jogo, Bolao, Palpite
+from .models import Campeonato, Time, Jogo, Bolao, Bilhete
 from datetime import datetime, timedelta
 from usuario.factories.usuario import CarteiraFactory, EnderecoFactory, PermissoesNotificacaoFactory, UsuarioFactory
 
@@ -87,12 +87,12 @@ class BolaoModelTestCase(TestCase):
         bolao = Bolao.objects.create(criador=self.criador, valor_palpite=Decimal('10.00'))
         usuario1 = usuario1
         usuario2 = usuario2
-        palpite1 = Palpite.objects.create(usuario=usuario1, bolao=bolao)
-        palpite2 = Palpite.objects.create(usuario=usuario2, bolao=bolao)
-        palpite1.placares.create(jogo=self.jogo1, placar_casa=1, placar_fora=0)
-        palpite1.placares.create(jogo=self.jogo2, placar_casa=2, placar_fora=1)
-        palpite2.placares.create(jogo=self.jogo1, placar_casa=2, placar_fora=1)
-        palpite2.placares.create(jogo=self.jogo2, placar_casa=1, placar_fora=1)
+        palpite1 = Bilhete.objects.create(usuario=usuario1, bolao=bolao)
+        palpite2 = Bilhete.objects.create(usuario=usuario2, bolao=bolao)
+        palpite1.palpites.create(jogo=self.jogo1, placar_casa=1, placar_fora=0)
+        palpite1.palpites.create(jogo=self.jogo2, placar_casa=2, placar_fora=1)
+        palpite2.palpites.create(jogo=self.jogo1, placar_casa=2, placar_fora=1)
+        palpite2.palpites.create(jogo=self.jogo2, placar_casa=1, placar_fora=1)
         vencedores = bolao.buscar_vencedores()
         self.assertEqual(vencedores, [usuario1])
 
@@ -112,9 +112,9 @@ class BolaoModelTestCase(TestCase):
         usuario2 = UsuarioFactory(endereco=endereco, permissoes=permissoes, carteira=carteira2)
         bolao = Bolao.objects.create(criador=self.criador, valor_palpite=Decimal('10.00'))
         bolao
-        palpite1 = Palpite.objects.create(usuario=usuario1, bolao=bolao)
-        palpite2 = Palpite.objects.create(usuario=usuario2, bolao=bolao)
-        palpite1.placares.create(jogo=self.jogo1, placar_casa=1, placar_fora=0)
-        palpite1.placares.create(jogo=self.jogo2, placar_casa=2, placar_fora=1)
-        palpite2.placares.create(jogo=self.jogo1, placar_casa=0, placar_fora=0)
+        palpite1 = Bilhete.objects.create(usuario=usuario1, bolao=bolao)
+        palpite2 = Bilhete.objects.create(usuario=usuario2, bolao=bolao)
+        palpite1.palpites.create(jogo=self.jogo1, placar_casa=1, placar_fora=0)
+        palpite1.palpites.create(jogo=self.jogo2, placar_casa=2, placar_fora=1)
+        palpite2.palpites.create(jogo=self.jogo1, placar_casa=0, placar_fora=0)
 '''
