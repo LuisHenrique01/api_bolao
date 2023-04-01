@@ -57,7 +57,6 @@ class CarteiraSerializer(serializers.ModelSerializer):
         return qr_code
 
 
-
 class CriarUsuarioSerializer(serializers.ModelSerializer):
 
     endereco = EnderecoSerializer()
