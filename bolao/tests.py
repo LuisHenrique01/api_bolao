@@ -79,14 +79,13 @@ class BolaoModelTestCase(TestCase):
 
     def test_buscar_vencedores(self):
         endereco = EnderecoFactory()
-        permissoes = PermissoesNotificacaoFactory()
-        carteira1 = CarteiraFactory()
-        carteira2 = CarteiraFactory()
-        usuario1 = UsuarioFactory(endereco=endereco, permissoes=permissoes, carteira=carteira1)
-        usuario2 = UsuarioFactory(endereco=endereco, permissoes=permissoes, carteira=carteira2)
+        permissoes1 = PermissoesNotificacaoFactory()
+        permissoes2 = PermissoesNotificacaoFactory()
+        usuario1 = UsuarioFactory(endereco=endereco, permissoes=permissoes1)
+        usuario2 = UsuarioFactory(endereco=endereco, permissoes=permissoes2)
+        usuario1.carteira.depositar(Decimal('50.00'))
+        usuario2.carteira.depositar(Decimal('50.00'))
         bolao = Bolao.objects.create(criador=self.criador, valor_palpite=Decimal('10.00'))
-        usuario1 = usuario1
-        usuario2 = usuario2
         palpite1 = Bilhete.objects.create(usuario=usuario1, bolao=bolao)
         palpite2 = Bilhete.objects.create(usuario=usuario2, bolao=bolao)
         palpite1.palpites.create(jogo=self.jogo1, placar_casa=1, placar_fora=0)
