@@ -21,6 +21,7 @@ env:
   MAX_TAXA_CRIADOR: ${{ vars.MAX_TAXA_CRIADOR }}
   MIN_TAXA_CRIADOR: ${{ vars.MIN_TAXA_CRIADOR }}
   MIN_PALPITE: ${{ vars.MIN_PALPITE }}
+  DEBUG: ${{ vars.DEBUG }}
 
 jobs:
   flake8:
