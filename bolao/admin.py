@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 
 from . import STATUS_JOGO_FINALIZADO_API, STATUS_BOLAO
 
-from .models import Campeonato, Time, Jogo, Bolao, Palpite, PalpitePlacar
+from .models import Campeonato, Time, Jogo, Bolao, Bilhete, Palpite
 from .forms import PalpitePlacarForm
 from core.network.football import API
 
@@ -90,11 +90,11 @@ class BolaoAdmin(admin.ModelAdmin):
 
 
 class PalpitePlacarInline(admin.TabularInline):
-    model = PalpitePlacar
+    model = Palpite
     form = PalpitePlacarForm
 
 
-@admin.register(Palpite)
+@admin.register(Bilhete)
 class PalpiteAdmin(admin.ModelAdmin):
     inlines = (PalpitePlacarInline, )
     list_display = ['bolao', 'usuario']

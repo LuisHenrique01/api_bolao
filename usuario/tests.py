@@ -40,8 +40,8 @@ class CarteiraModelTest(TestCase):
         self.assertFalse(self.carteira.saque_valido(Decimal("100")))
 
     def test_deposito_valido_interno(self):
-        self.assertTrue(Carteira.deposito_valido(Decimal("50")))
-        self.assertTrue(Carteira.deposito_valido(Decimal("9.99")))
+        self.assertTrue(self.carteira.deposito_valido(Decimal("50")))
+        self.assertTrue(self.carteira.deposito_valido(Decimal("9.99")))
 
     def test_saque(self):
         self.carteira.depositar(Decimal("100"))
@@ -69,19 +69,19 @@ class UsuarioModelTest(TestCase):
         cls.endereco = Endereco.objects.create(
             cep='01234567', estado='SP', cidade='São Paulo', bairro='Bela Vista', rua='Av Paulista', numero='123',
         )
-        cls.carteira = Carteira.objects.create(saldo=Decimal('100.00'))
         cls.usuario = Usuario.objects.create(
             id=uuid.uuid4(), email='johndoe@example.com', cpf='12345678901', nome='John Doe',
             data_nascimento='2000-01-01', telefone='11999999999', endereco=cls.endereco,
-            permissoes=cls.permissoes, carteira=cls.carteira,
+            permissoes=cls.permissoes
         )
+        cls.usuario.carteira.depositar(Decimal('100.00'))
 
     def test_email_unique_constraint(self):
         with self.assertRaises(IntegrityError):
             _ = Usuario.objects.create(
                 id=uuid.uuid4(), email='johndoe@example.com', cpf='10987654321', nome='Jane Doe',
                 data_nascimento='2000-01-01', telefone='11988888888', endereco=self.endereco,
-                permissoes=self.permissoes, carteira=self.carteira,
+                permissoes=self.permissoes
             )
 
     def test_cpf_unique_constraint(self):
@@ -89,7 +89,7 @@ class UsuarioModelTest(TestCase):
             _ = Usuario.objects.create(
                 id=uuid.uuid4(), email='janedoe1@example.com', cpf='12345678901', nome='Jane Doe',
                 data_nascimento='2000-01-01', telefone='11988888888', endereco=self.endereco,
-                permissoes=self.permissoes, carteira=self.carteira,
+                permissoes=self.permissoes
             )
 
     def test_envio_notificacao_valido(self):

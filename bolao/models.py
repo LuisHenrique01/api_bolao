@@ -82,7 +82,7 @@ class Jogo(BaseModel):
 class Bolao(BaseModel):
 
     criador = models.ForeignKey(Usuario, verbose_name="Criador", on_delete=models.PROTECT, related_name='boloes')
-    valor_palpite = models.DecimalField("Valor palpite", max_digits=5, decimal_places=2,
+    valor_palpite = models.DecimalField("Valor bilhete", max_digits=5, decimal_places=2,
                                         validators=[MaxValueValidator(Decimal(os.getenv('MAX_PALPITE'))),
                                                     MinValueValidator(Decimal(os.getenv('MIN_PALPITE')))])
     codigo = models.CharField("Código", max_length=25, default=gerar_codigo)
@@ -99,14 +99,16 @@ class Bolao(BaseModel):
         verbose_name_plural = 'Bolões'
 
     def buscar_vencedores(self):
-        return [palpite.usuario for palpite in self.palpites.all() if palpite.acertou]
+        return [bilhete.usuario for bilhete in self.bilhetes.all() if bilhete.acertou]
 
     def retirar_banca_e_criador(self) -> Decimal:
         """Retorna o valor restante da subtração"""
-        total_bolao = self.palpites.count() * self.valor_palpite
+        total_bolao = self.bilhetes.count() * self.valor_palpite
         valor_banca = Decimal(self.taxa_banca / 100).quantize(Decimal('.01')) * total_bolao
         valor_criador = Decimal(self.taxa_criador / 100).quantize(Decimal('.01')) * total_bolao
         self.criador.carteira.depositar(valor_criador)
+        banca = Usuario.objects.get(id=os.getenv('ID_CARTEIRA_BANCA'))
+        banca.carteira.depositar(valor_banca)
         return total_bolao - (valor_banca + valor_criador)
 
     def pagar_vencedores(self, vencedores: List[Usuario]):
@@ -119,9 +121,9 @@ class Bolao(BaseModel):
     def estornar_bolao(self):
         """Usar quando não a vencedores e estorno está ativado."""
         liquido = self.retirar_banca_e_criador()
-        ganho = liquido / self.palpites.count()
-        for palpite in self.palpites.all():
-            palpite.usuario.carteira.depositar(ganho)
+        ganho = liquido / self.bilhetes.count()
+        for bilhete in self.bilhetes.all():
+            bilhete.usuario.carteira.depositar(ganho)
 
     def dividir_entre_banca_e_criador(self):
         """Usar quando não a vencedores e estorno não está ativado."""
@@ -130,8 +132,8 @@ class Bolao(BaseModel):
 
     @transaction.atomic
     def cancelar_bolao(self):
-        for palpite in self.self.palpites.all():
-            palpite.usuario.carteira.depositar(self.valor_palpite)
+        for bilhete in self.self.bilhetes.all():
+            bilhete.usuario.carteira.depositar(self.valor_palpite)
         self.status = STATUS_BOLAO['CANCELADO']
         self.save()
 
@@ -153,24 +155,24 @@ class Bolao(BaseModel):
         return f'Aposta: {self.valor_palpite}|Código: {self.codigo}'
 
 
-class Palpite(BaseModel):
+class Bilhete(BaseModel):
 
-    usuario = models.ForeignKey(Usuario, verbose_name="Usuário", on_delete=models.PROTECT, related_name='palpites')
-    bolao = models.ForeignKey(Bolao, verbose_name="Bolão", on_delete=models.PROTECT, related_name='palpites')
+    usuario = models.ForeignKey(Usuario, verbose_name="Usuário", on_delete=models.PROTECT, related_name='bilhetes')
+    bolao = models.ForeignKey(Bolao, verbose_name="Bolão", on_delete=models.PROTECT, related_name='bilhetes')
 
     class Meta:
-        verbose_name = 'Palpite'
-        verbose_name_plural = 'Palpites'
+        verbose_name = 'Bilhete'
+        verbose_name_plural = 'Bilhetes'
 
     @property
     def acertou(self):
-        return all([palpite.acertou for palpite in self.placares.all()])
+        return all([bilhete.acertou for bilhete in self.palpites.all()])
 
     def clean(self) -> None:
         if not self.usuario.carteira.saque_valido(self.bolao.valor_palpite):
             raise ValidationError("Saldo insuficiente.")
         if self.bolao.status != STATUS_BOLAO['ATIVO']:
-            raise ValidationError(f"Não é possível dar palpites pois o bolão {self.bolao.status.lower()}")
+            raise ValidationError(f"Não é possível dar bilhetes pois o bolão {self.bolao.status.lower()}")
         return super().clean()
 
     def save(self, **kwargs) -> None:
@@ -181,16 +183,16 @@ class Palpite(BaseModel):
         return f'{self.usuario.nome_formatado}|{self.bolao}'
 
 
-class PalpitePlacar(models.Model):
+class Palpite(models.Model):
 
-    jogo = models.ForeignKey(Jogo, verbose_name="Jogo", on_delete=models.PROTECT, related_name='palpites_placar')
-    palpite = models.ForeignKey(Palpite, verbose_name="Palpite", on_delete=models.PROTECT, related_name='placares')
+    jogo = models.ForeignKey(Jogo, verbose_name="Jogo", on_delete=models.PROTECT, related_name='palpites')
+    bilhete = models.ForeignKey(Bilhete, verbose_name="Bilhete", on_delete=models.PROTECT, related_name='palpites')
     placar_casa = models.IntegerField('Placar casa')
     placar_fora = models.IntegerField('Placar Fora')
 
     class Meta:
-        verbose_name = 'Placar'
-        verbose_name_plural = 'Placares'
+        verbose_name = 'Palpite'
+        verbose_name_plural = 'Palpites'
 
     @property
     def acertou(self):

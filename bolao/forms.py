@@ -1,10 +1,10 @@
 from django import forms
 
-from bolao.models import PalpitePlacar
+from bolao.models import Palpite
 
 
 class PalpitePlacarForm(forms.ModelForm):
 
     class Meta:
-        model = PalpitePlacar
-        exclude = ('palpite', )
+        model = Palpite
+        exclude = ('bilhete', )
