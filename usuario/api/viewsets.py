@@ -125,7 +125,7 @@ class UsuarioViewSet(ViewSet):
 class CarteiraViewSet(ViewSet):
 
     queryset = Carteira.objects.all()
-    permission_classes = [AllowAny, UsuarioBloqueado]
+    permission_classes = [IsAuthenticated, UsuarioBloqueado]
 
     def list(self, request):
         serializer = CarteiraSerializer(request.user.carteira)

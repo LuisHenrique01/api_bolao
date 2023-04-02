@@ -86,25 +86,27 @@ class UsuarioNotificacaoSerializer(serializers.Serializer):
     sms = serializers.CharField(required=False)
 
     def recuperar_senha(self):
+        email = self.validated_data.get("email")
+        sms = self.validated_data.get("sms")
         try:
-            if self.validated_data.get("email"):
-                usuario = Usuario.objects.get(email=self.validated_data['email'])
+            if email:
+                usuario = Usuario.objects.get(email=email)
                 codigo = usuario.permissoes.criar_codigo('email')
                 Email.recuperar_senha(usuario.email, codigo.codigo)
-            if self.validated_data.get("sms"):
-                # usuario = Usuario.objects.get(telefone=self.validated_data['sms'])
+            if sms:
                 raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
         except ObjectDoesNotExist:
             raise UsuarioNaoEncontrado()
 
     def validar_usuario(self):
+        email = self.validated_data.get("email")
+        sms = self.validated_data.get("sms")
         try:
-            if self.validated_data.get("email"):
-                usuario = Usuario.objects.get(email=self.validated_data['email'])
+            if email:
+                usuario = Usuario.objects.get(email=email)
                 codigo = usuario.permissoes.criar_codigo('email')
                 Email.validar_usuario(usuario.email, codigo.codigo)
-            if self.validated_data.get("sms"):
-                # usuario = Usuario.objects.get(telefone=self.validated_data['sms'])
+            if sms:
                 raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
         except ObjectDoesNotExist:
             raise UsuarioNaoEncontrado()
