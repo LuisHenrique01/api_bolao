@@ -2,6 +2,7 @@ import os
 from decimal import Decimal
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from core.communications import Email
 from core.models import HistoricoTransacao
 
 from usuario.models import Carteira, Endereco, PermissoesNotificacao, Usuario
@@ -84,14 +85,27 @@ class UsuarioNotificacaoSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False)
     sms = serializers.CharField(required=False)
 
-    def enviar_codigo(self):
+    def recuperar_senha(self):
         try:
             if self.validated_data.get("email"):
                 usuario = Usuario.objects.get(email=self.validated_data['email'])
-                usuario.permissoes.enviar_validacao_email()
+                codigo = usuario.permissoes.criar_codigo('email')
+                Email.recuperar_senha(usuario.email, codigo.codigo)
             if self.validated_data.get("sms"):
-                usuario = Usuario.objects.get(telefone=self.validated_data['sms'])
-                usuario.permissoes.enviar_validacao_sms()
+                # usuario = Usuario.objects.get(telefone=self.validated_data['sms'])
+                raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
+        except ObjectDoesNotExist:
+            raise UsuarioNaoEncontrado()
+
+    def validar_usuario(self):
+        try:
+            if self.validated_data.get("email"):
+                usuario = Usuario.objects.get(email=self.validated_data['email'])
+                codigo = usuario.permissoes.criar_codigo('email')
+                Email.validar_usuario(usuario.email, codigo.codigo)
+            if self.validated_data.get("sms"):
+                # usuario = Usuario.objects.get(telefone=self.validated_data['sms'])
+                raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
         except ObjectDoesNotExist:
             raise UsuarioNaoEncontrado()
 
