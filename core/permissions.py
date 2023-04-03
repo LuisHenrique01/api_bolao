@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated
 
 
 class UsuarioBloqueado(BasePermission):
@@ -24,3 +24,14 @@ class UsuarioValidado(BasePermission):
     def has_permission(self, request, _):
         return bool(request.user and (request.user.permissoes.email_verificado or
                                       request.user.permissoes.sms_verificado))
+
+
+class Leitura(BasePermission):
+
+    def has_permission(self, request, _):
+        return bool(request.method in SAFE_METHODS)
+
+
+DEFAULT_PERMISSIONS = [UsuarioBloqueado, UsuarioValidado]
+CARTEIRA_PERMISSIONS = [*DEFAULT_PERMISSIONS, IsAuthenticated, CarteiraBloqueada]
+LEITURA_OU_AUTENTICACAO_COMPLETA = [UsuarioBloqueado & UsuarioValidado & IsAuthenticated | Leitura]

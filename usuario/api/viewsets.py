@@ -2,8 +2,8 @@ from rest_framework.viewsets import ViewSet, ReadOnlyModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from core.permissions import UsuarioBloqueado
+from rest_framework.permissions import AllowAny
+from core.permissions import CARTEIRA_PERMISSIONS
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import PermissionDenied
 
@@ -125,7 +125,7 @@ class UsuarioViewSet(ViewSet):
 class CarteiraViewSet(ViewSet):
 
     queryset = Carteira.objects.all()
-    permission_classes = [IsAuthenticated, UsuarioBloqueado]
+    permission_classes = CARTEIRA_PERMISSIONS
 
     def list(self, request):
         serializer = CarteiraSerializer(request.user.carteira)

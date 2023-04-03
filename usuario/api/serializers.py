@@ -32,7 +32,7 @@ class CarteiraSerializer(serializers.ModelSerializer):
     class Meta:
         model = Carteira
         fields = '__all__'
-        readonly = ['saldo', 'bloqueado']
+        read_only_fields = ['saldo', 'bloqueado']
 
     def validate_valor(self, value):
         if 'pix' in self.initial_data:
@@ -68,7 +68,7 @@ class CriarUsuarioSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = ['email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
                   'endereco', 'permissoes', 'carteira']
-        read_only = ['id']
+        read_only_fields = ['id']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -121,7 +121,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = ['id', 'email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
                   'endereco', 'permissoes', 'carteira']
-        read_only = ['id', 'cpf', 'data_nascimento']
+        read_only_fields = ['id', 'cpf', 'data_nascimento']
         extra_kwargs = {'password': {'write_only': True}}
 
     def update(self, instance, validated_data):
