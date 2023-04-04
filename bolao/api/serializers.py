@@ -4,6 +4,7 @@ from decimal import Decimal
 from rest_framework import serializers
 from django.utils import timezone
 
+from bolao import STATUS_BOLAO
 from bolao.models import Bolao, Campeonato, Jogo, Time
 
 
@@ -79,7 +80,7 @@ class CriarBolaoSerializer(serializers.ModelSerializer):
         return value
 
     def validate_codigo(self, value):
-        if not Bolao.objects.filter(codigo=value).exists():
+        if Bolao.objects.filter(codigo=value).exclude(status=STATUS_BOLAO['CANCELADO']).exists():
             raise serializers.ValidationError("Código do bolão existente.")
         return value
 

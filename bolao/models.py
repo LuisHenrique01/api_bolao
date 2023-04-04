@@ -1,6 +1,7 @@
 import os
 from decimal import Decimal
 from typing import List
+from django.utils import timezone
 from django.db import models, transaction
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
@@ -147,9 +148,16 @@ class Bolao(BaseModel):
         elif len(vencedores) == 0 and not self.estorno:
             self.dividir_entre_banca_e_criador()
         else:
-            self.cancelar_aposta()
+            self.cancelar_bolao()
         self.status = STATUS_BOLAO['FINALIZADO']
         self.save()
+
+    @property
+    def status_atualizado(self):
+        for jogo in self.jogos:
+            if jogo.data <= timezone.now():
+                return STATUS_BOLAO['JOGO INICIADO']
+        return self.status
 
     def __str__(self):
         return f'Aposta: {self.valor_palpite}|Código: {self.codigo}'

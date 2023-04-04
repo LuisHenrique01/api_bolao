@@ -49,6 +49,15 @@ class BolaoViewSet(ViewSet):
         serializer = BolaoSerializer(bolao)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def destroy(self, request, pk=None):
+        bolao = get_object_or_404(self.queryset, pk=pk)
+        if request.user == bolao.criador:
+            if bolao.status_atualizado in (STATUS_BOLAO['ATIVO'], STATUS_BOLAO['PALPITES PAUSADOS']):
+                bolao.cancelar_bolao()
+                return Response({'message': 'Sucesso!'}, status=status.HTTP_200_OK)
+            return Response({'message': 'O bolão não pode mais ser cancelado.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
     @action(detail=False, methods=['GET'], url_path='meus-boloes')
     def meus_boloes(self, request):
         queryset = self.queryset.filter(criador=request.user)
