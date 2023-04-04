@@ -6,13 +6,11 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 
 from django.db import models, transaction
-from django.core.mail import send_mail
 from django.utils import timezone
 
 from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException
 from core.models import BaseModel, HistoricoTransacao
 from core.utils import cpf_valido, gerar_codigo
-from core.communications import Email
 
 from .managers import UserManager
 

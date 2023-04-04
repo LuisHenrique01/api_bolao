@@ -1,6 +1,8 @@
+from datetime import timedelta
+import os
 from decimal import Decimal
-from uuid import uuid4
 from rest_framework import serializers
+from django.utils import timezone
 
 from bolao.models import Bolao, Campeonato, Jogo, Time
 
@@ -60,4 +62,30 @@ class CriarBolaoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bolao
         fields = ['criador', 'valor_palpite', 'codigo', 'jogos', 'estorno', 'taxa_criador']
-    
+
+    def validate_jogos(self, value):
+        now = timezone.now() - timedelta(minutes=5)
+        for jogo in value:
+            if jogo.data <= now:
+                raise serializers.ValidationError(f"O jogo {jogo} não pode ser adicionado, \
+                                                  pois já iniciou ou está próximo do início.")
+        return value
+
+    def validate_valor_palpite(self, value):
+        if Decimal(os.getenv('MIN_PALPITE')) > value:
+            raise serializers.ValidationError("O valor do palpite está abaixo do permitido.")
+        if Decimal(os.getenv('MAX_PALPITE')) < value:
+            raise serializers.ValidationError("O valor do palpite está acima do permitido.")
+        return value
+
+    def validate_codigo(self, value):
+        if not Bolao.objects.filter(codigo=value).exists():
+            raise serializers.ValidationError("Código do bolão existente.")
+        return value
+
+    def validate_taxa_criador(self, value):
+        if Decimal(os.getenv('MIN_TAXA_CRIADOR')) > value:
+            raise serializers.ValidationError("O valor da taxa crieador está abaixo do permitido.")
+        if Decimal(os.getenv('MAX_TAXA_CRIADOR')) < value:
+            raise serializers.ValidationError("O valor da taxa crieador está acima do permitido.")
+        return value

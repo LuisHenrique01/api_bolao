@@ -4,7 +4,8 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.viewsets import ReadOnlyModelViewSet, ViewSet
 
-from bolao.api.serializers import BolaoSerializer, CampeonatoSerializer, JogoSerializer, TimeSerializer, CriarBolaoSerializer
+from bolao.api.serializers import (BolaoSerializer, CampeonatoSerializer, JogoSerializer,
+                                   TimeSerializer, CriarBolaoSerializer)
 from bolao.models import Campeonato, Jogo, Time, Bolao
 from core.permissions import LEITURA_OU_AUTENTICACAO_COMPLETA
 from bolao import STATUS_BOLAO
