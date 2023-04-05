@@ -171,7 +171,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     @property
     def cpf_marcarado(self) -> str:
-        return f'***.{self.cpf[3:6:]}.***-**'
+        return f'***.{self.cpf[3:6:]}.{self.cpf[6:9:]}-**'
 
     @property
     def telefone_formatado(self) -> str:

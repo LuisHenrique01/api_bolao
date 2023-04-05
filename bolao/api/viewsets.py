@@ -4,9 +4,10 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.viewsets import ReadOnlyModelViewSet, ViewSet
 
-from bolao.api.serializers import (BolaoSerializer, CampeonatoSerializer, JogoSerializer,
-                                   TimeSerializer, CriarBolaoSerializer)
-from bolao.models import Campeonato, Jogo, Time, Bolao
+from bolao.api.serializers import (PalpiteCriarSerializer, BilheteCriarSerializer, BilheteSerializer, BolaoSerializer,
+                                   CampeonatoSerializer, JogoSerializer, TimeSerializer, CriarBolaoSerializer)
+from bolao.models import Bilhete, Campeonato, Jogo, Time, Bolao
+from core.custom_exception import SaldoInvalidoException
 from core.permissions import LEITURA_OU_AUTENTICACAO_COMPLETA
 from bolao import STATUS_BOLAO
 
@@ -63,3 +64,35 @@ class BolaoViewSet(ViewSet):
         queryset = self.queryset.filter(criador=request.user)
         serializer = BolaoSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['POST'], url_path='pausar-palpites')
+    def meus_boloes(self, request, pk=None):
+        bolao = get_object_or_404(self.queryset, pk=pk)
+        if request.user == bolao.criador:
+            bolao.status = STATUS_BOLAO['PALPITES PAUSADOS']
+            bolao.save()
+            return Response({'message': 'Sucesso!'}, status=status.HTTP_200_OK)
+        return Response({'message': 'O usuário atual não pode pausar o bolão.'}, status=status.HTTP_400_BAD_REQUEST)
+
+class BilheteViewSet(ViewSet):
+
+    queryset = Bilhete.objects.all()
+
+    def list(self, request):
+        queryset = self.queryset.filter(usuario=request.user)
+        serializer = BilheteSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        try:
+            bilhete_serializer = BilheteCriarSerializer(data={'bolao': request.data['bolao'], 'usuario': request.user.id})
+            bilhete_serializer.is_valid(raise_exception=True)
+            bilhete = bilhete_serializer.save()
+            for palpite in request.data['palpites']:
+                palpite['bilhete'] = bilhete.id
+                palpite_seriaizer = PalpiteCriarSerializer(data=palpite)
+                palpite_seriaizer.is_valid(raise_exception=True)
+                palpite_seriaizer.save()
+            return Response(bilhete_serializer.data, status=status.HTTP_200_OK)
+        except SaldoInvalidoException as e:
+            return Response(e.serialize, status=status.HTTP_402_PAYMENT_REQUIRED)

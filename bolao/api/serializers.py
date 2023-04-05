@@ -5,7 +5,7 @@ from rest_framework import serializers
 from django.utils import timezone
 
 from bolao import STATUS_BOLAO
-from bolao.models import Bolao, Campeonato, Jogo, Time
+from bolao.models import Bolao, Campeonato, Jogo, Time, Palpite, Bilhete
 
 
 class CampeonatoSerializer(serializers.ModelSerializer):
@@ -42,8 +42,9 @@ class BolaoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bolao
-        fields = ['criador', 'valor_palpite', 'codigo', 'jogos', 'estorno', 'taxa_banca', 'taxa_criador',
+        fields = ['id', 'criador', 'valor_palpite', 'codigo', 'jogos', 'estorno', 'taxa_banca', 'taxa_criador',
                   'status', 'qtd_palpites', 'posivel_retorno', 'vencedores']
+        read_only_fields = ['id']
         extra_kwargs = {'criador': {'write_only': True}}
 
     def get_qtd_palpites(self, obj):
@@ -55,7 +56,7 @@ class BolaoSerializer(serializers.ModelSerializer):
         return total * taxa
 
     def get_vencedores(self, obj):
-        return obj.buscar_vencedores()
+        return [usuario.nome_formatado for usuario in obj.buscar_vencedores()]
 
 
 class CriarBolaoSerializer(serializers.ModelSerializer):
@@ -90,3 +91,62 @@ class CriarBolaoSerializer(serializers.ModelSerializer):
         if Decimal(os.getenv('MAX_TAXA_CRIADOR')) < value:
             raise serializers.ValidationError("O valor da taxa crieador está acima do permitido.")
         return value
+
+
+class PalpiteSerializer(serializers.ModelSerializer):
+
+    jogo = JogoSerializer()
+
+    class Meta:
+        model = Palpite
+        fields = ['jogo', 'placar_casa', 'placar_fora']
+
+
+class BilheteSerializer(serializers.ModelSerializer):
+
+    palpites = PalpiteSerializer(many=True)
+    codigo_bolao = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Bilhete
+        fields = ['usuario', 'bolao', 'palpites', 'acertou', 'codigo_bolao']
+        read_only_fields = ['acertou']
+        extra_kwargs = {'usuario': {'write_only': True}, 'bolao': {'write_only': True}}
+
+    def get_codigo_bolao(self, obj):
+        return obj.bolao.codigo
+
+
+class PalpiteCriarSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Palpite
+        fields = '__all__'
+
+    def validate(self, attrs):
+        now = timezone.now()
+        if now < attrs['jogo'].data:
+            return super().validate(attrs)
+        raise serializers.ValidationError('Este bolão não está mais aceitando palpites.')
+
+    def validate_placar_casa(self, value):
+        if value >= 0:
+            return value
+        raise serializers.ValidationError('O placar do time casa deve ser maior que 0.')
+
+    def validate_placar_fora(self, value):
+        if value >= 0:
+            return value
+        raise serializers.ValidationError('O placar do time fora deve ser maior que 0.')
+
+
+class BilheteCriarSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Bilhete
+        fields = '__all__'
+    
+    def validate(self, attrs):
+        if attrs['usuario'].carteira.saque_valido(attrs['bolao'].valor_palpite):
+            return super().validate(attrs)
+        raise serializers.ValidationError("Saldo insuficiente.")
