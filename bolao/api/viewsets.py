@@ -66,13 +66,14 @@ class BolaoViewSet(ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['POST'], url_path='pausar-palpites')
-    def meus_boloes(self, request, pk=None):
+    def pausar_palpites(self, request, pk=None):
         bolao = get_object_or_404(self.queryset, pk=pk)
         if request.user == bolao.criador:
             bolao.status = STATUS_BOLAO['PALPITES PAUSADOS']
             bolao.save()
             return Response({'message': 'Sucesso!'}, status=status.HTTP_200_OK)
         return Response({'message': 'O usuário atual não pode pausar o bolão.'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class BilheteViewSet(ViewSet):
 
@@ -85,7 +86,8 @@ class BilheteViewSet(ViewSet):
 
     def create(self, request):
         try:
-            bilhete_serializer = BilheteCriarSerializer(data={'bolao': request.data['bolao'], 'usuario': request.user.id})
+            bilhete_serializer = BilheteCriarSerializer(data={'bolao': request.data['bolao'],
+                                                              'usuario': request.user.id})
             bilhete_serializer.is_valid(raise_exception=True)
             bilhete = bilhete_serializer.save()
             for palpite in request.data['palpites']:
