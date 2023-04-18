@@ -2,6 +2,7 @@ import os
 from decimal import Decimal
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from core.communications import Email
 from core.models import HistoricoTransacao
 
 from usuario.models import Carteira, Endereco, PermissoesNotificacao, Usuario
@@ -31,7 +32,7 @@ class CarteiraSerializer(serializers.ModelSerializer):
     class Meta:
         model = Carteira
         fields = '__all__'
-        readonly = ['saldo', 'bloqueado']
+        read_only_fields = ['saldo', 'bloqueado']
 
     def validate_valor(self, value):
         if 'pix' in self.initial_data:
@@ -67,7 +68,7 @@ class CriarUsuarioSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = ['email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
                   'endereco', 'permissoes', 'carteira']
-        read_only = ['id']
+        read_only_fields = ['id']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -84,14 +85,29 @@ class UsuarioNotificacaoSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False)
     sms = serializers.CharField(required=False)
 
-    def enviar_codigo(self):
+    def recuperar_senha(self):
+        email = self.validated_data.get("email")
+        sms = self.validated_data.get("sms")
         try:
-            if self.validated_data.get("email"):
-                usuario = Usuario.objects.get(email=self.validated_data['email'])
-                usuario.permissoes.enviar_validacao_email()
-            if self.validated_data.get("sms"):
-                usuario = Usuario.objects.get(telefone=self.validated_data['sms'])
-                usuario.permissoes.enviar_validacao_sms()
+            if email:
+                usuario = Usuario.objects.get(email=email)
+                codigo = usuario.permissoes.criar_codigo('email')
+                Email.recuperar_senha(usuario.email, codigo.codigo)
+            if sms:
+                raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
+        except ObjectDoesNotExist:
+            raise UsuarioNaoEncontrado()
+
+    def validar_usuario(self):
+        email = self.validated_data.get("email")
+        sms = self.validated_data.get("sms")
+        try:
+            if email:
+                usuario = Usuario.objects.get(email=email)
+                codigo = usuario.permissoes.criar_codigo('email')
+                Email.validar_usuario(usuario.email, codigo.codigo)
+            if sms:
+                raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
         except ObjectDoesNotExist:
             raise UsuarioNaoEncontrado()
 
@@ -105,7 +121,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = ['id', 'email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
                   'endereco', 'permissoes', 'carteira']
-        read_only = ['id', 'cpf', 'data_nascimento']
+        read_only_fields = ['id', 'cpf', 'data_nascimento']
         extra_kwargs = {'password': {'write_only': True}}
 
     def update(self, instance, validated_data):

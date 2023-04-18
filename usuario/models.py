@@ -6,7 +6,6 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 
 from django.db import models, transaction
-from django.core.mail import send_mail
 from django.utils import timezone
 
 from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException
@@ -23,20 +22,10 @@ class PermissoesNotificacao(BaseModel):
     sms_verificado = models.BooleanField('SMS vefiricado', default=False)
     email_verificado = models.BooleanField('E-mail verificado', default=False)
 
-    def enviar_validacao_email(self) -> str:
-        codigo = CodigosDeValidacao(permissao=self, tipo='email')
+    def criar_codigo(self, tipo: str):
+        codigo = CodigosDeValidacao(permissao=self, tipo=tipo)
         codigo.save()
-        if self.usuario.email:
-            send_mail(
-                'Código para recuperação de senha.',
-                f'Seu código de verificação é {codigo.codigo}.\n\n Seu código expira em 30 minutos.',
-                os.getenv('EMAIL'),
-                [self.usuario.email],
-                fail_silently=False,
-            )
-
-    def enviar_validacao_sms(self) -> str:
-        raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
+        return codigo
 
     class Meta:
         verbose_name = "Pemissão para notificação"
@@ -56,7 +45,7 @@ class CodigosDeValidacao(BaseModel):
 
     @classmethod
     def valido(self, codigo: str) -> bool:
-        now = timezone.now() - timedelta(minutes=30)
+        now = timezone.now() - timedelta(hours=2)
         return CodigosDeValidacao.objects.filter(codigo=codigo, created_at__gte=now).exists()
 
     def save(self, **kwargs) -> None:
@@ -182,7 +171,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     @property
     def cpf_marcarado(self) -> str:
-        return f'***.{self.cpf[3:6:]}.***-**'
+        return f'***.{self.cpf[3:6:]}.{self.cpf[6:9:]}-**'
 
     @property
     def telefone_formatado(self) -> str:

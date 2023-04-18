@@ -1,6 +1,7 @@
 import os
 from decimal import Decimal
 from typing import List
+from django.utils import timezone
 from django.db import models, transaction
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
@@ -73,6 +74,8 @@ class Jogo(BaseModel):
         return str(self)
 
     def acertou_palpite(self, casa: int, fora: int) -> bool:
+        if self.placar_casa is None or self.placar_fora is None:
+            return None
         return casa == self.placar_casa and fora == self.placar_fora
 
     def __str__(self):
@@ -147,9 +150,16 @@ class Bolao(BaseModel):
         elif len(vencedores) == 0 and not self.estorno:
             self.dividir_entre_banca_e_criador()
         else:
-            self.cancelar_aposta()
+            self.cancelar_bolao()
         self.status = STATUS_BOLAO['FINALIZADO']
         self.save()
+
+    @property
+    def status_atualizado(self):
+        for jogo in self.jogos:
+            if jogo.data <= timezone.now():
+                return STATUS_BOLAO['JOGO INICIADO']
+        return self.status
 
     def __str__(self):
         return f'Aposta: {self.valor_palpite}|Código: {self.codigo}'

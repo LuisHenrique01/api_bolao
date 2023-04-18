@@ -1,7 +1,8 @@
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 import os
 from typing import List, Union
 import requests
+from django.utils import timezone
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet
@@ -77,7 +78,7 @@ class API:
 
         id_externo = jogo["fixture"]["id"]
         status = jogo["fixture"]["status"]["short"]
-        data = datetime.strptime(jogo["fixture"]["date"], "%Y-%m-%dT%H:%M:%S-03:00")
+        data = timezone.datetime.strptime(jogo["fixture"]["date"], "%Y-%m-%dT%H:%M:%S-03:00")
         placar_casa = jogo["goals"]["home"]
         placar_fora = jogo["goals"]["away"]
         vencedor = cls.obter_vencedor(placar_casa, placar_fora)

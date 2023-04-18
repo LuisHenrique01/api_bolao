@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     # Libs
     'rest_framework',
     'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',
     # Apps
     'usuario',
     'core',
@@ -60,7 +59,7 @@ ROOT_URLCONF = 'api_bolao.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -114,14 +113,14 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
+        'core.permissions.UsuarioBloqueado',
+        'core.permissions.UsuarioValidado'
     ]
 }
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=15)
 }
 
 

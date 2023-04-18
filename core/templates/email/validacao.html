@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>{{ titulo }}</title>
+	<style>
+		h2 {
+			margin-top: 50px;
+			margin-bottom: 20px;
+			text-align: center;
+			color: black;
+			background-color: #137B80;
+		}
+		p {
+			font-size: 16px;
+			color: black;
+			margin-bottom: 10px;
+		}
+	</style>
+</head>
+<body>
+	<h2>{{ titulo }}</h2>
+	<div style="text-align: center;">
+		<p>Seu código de validação é: {{ codigo }}</p>
+		<p>Este código é válido até: {{ expiracao }}</p>
+		<p>{{ mensagem }}</p>
+	</div>
+</body>
+</html>

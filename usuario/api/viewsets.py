@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
+from core.permissions import CARTEIRA_PERMISSIONS
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import PermissionDenied
 
@@ -18,6 +19,9 @@ class CriarUsuarioViewSet(ViewSet):
 
     queryset = Usuario.objects.all()
     permission_classes = [AllowAny]
+
+    def is_authenticated(self, request):
+        return bool(request.user and request.user.is_authenticated)
 
     def get_user(self, data):
         return Usuario.objects.get(email=data['email'])
@@ -42,7 +46,7 @@ class CriarUsuarioViewSet(ViewSet):
         try:
             serializer = UsuarioNotificacaoSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            serializer.enviar_codigo()
+            serializer.recuperar_senha()
             return Response({'message': 'Sucesso!'}, status=status.HTTP_200_OK)
         except UsuarioNaoEncontrado as e:
             return Response(e.serializer, status=status.HTTP_404_NOT_FOUND)
@@ -54,11 +58,11 @@ class CriarUsuarioViewSet(ViewSet):
         if CodigosDeValidacao.valido(request.data['codigo']):
             codigo = CodigosDeValidacao.objects.get(codigo=request.data['codigo'])
             codigo.confirmado = True
-            if codigo.tipo == 'email':
-                codigo.permissao.email_verificado = True
-                codigo.permissao.save()
-            if codigo.tipo == 'sms':
-                codigo.permissao.sms_verificado = True
+            if self.is_authenticated(request):
+                if codigo.tipo == 'email':
+                    codigo.permissao.email_verificado = True
+                if codigo.tipo == 'sms':
+                    codigo.permissao.sms_verificado = True
                 codigo.permissao.save()
             codigo.save()
             return Response({'message': 'Sucesso!'}, status=status.HTTP_200_OK)
@@ -104,19 +108,24 @@ class UsuarioViewSet(ViewSet):
         except UsuarioNaoEncontrado as e:
             return Response(e.serializer, status=status.HTTP_404_NOT_FOUND)
 
-    @action(detail=False, methods=['POST'], url_path='logout')
-    def logout(self, request):
+    @action(detail=False, methods=['POST'], url_path='validar-usuario')
+    def codigo_validar_usuario(self, request):
         try:
-            token = RefreshToken(request.data["refresh"])
-            token.blacklist()
+            forma = request.data['forma']
+            serializer = UsuarioNotificacaoSerializer(data={forma: getattr(request.user, forma)})
+            serializer.is_valid(raise_exception=True)
+            serializer.validar_usuario()
             return Response({'message': 'Sucesso!'}, status=status.HTTP_200_OK)
-        except Exception:
-            return Response({'message': 'Erro interno no servidor.'}, status=status.HTTP_400_BAD_REQUEST)
+        except UsuarioNaoEncontrado as e:
+            return Response(e.serializer, status=status.HTTP_404_NOT_FOUND)
+        except NotImplementedError as e:
+            return Response({'message': str(e)}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
 
 class CarteiraViewSet(ViewSet):
 
     queryset = Carteira.objects.all()
+    permission_classes = CARTEIRA_PERMISSIONS
 
     def list(self, request):
         serializer = CarteiraSerializer(request.user.carteira)
