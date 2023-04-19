@@ -119,10 +119,12 @@ class API:
 
     @classmethod
     def buscar_e_salvar_jogos(cls, campeonatos: List[Campeonato]) -> bool:
+        criados = []
         for campeonato in campeonatos:
             jogos = cls.buscar_jogos(campeonato)
             for jogo in jogos:
-                cls.salvar_jogo(jogo, campeonato)
+                criados.append(cls.salvar_jogo(jogo, campeonato))
+        return criados
 
     @classmethod
     def salvar_time(cls, id_externo: int, nome: str, logo: str):

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from datetime import timedelta
 import os
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -121,6 +122,14 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15)
+}
+
+
+CELERY_BEAT_SCHEDULE = {
+    "sample_task": {
+        "task": "bolao.tasks.buscar_jogos",
+        "schedule": crontab(day_of_week="*/7", hour='2', minute='*'),
+    },
 }
 
 
