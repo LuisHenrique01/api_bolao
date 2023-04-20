@@ -101,7 +101,7 @@ class UsuarioModelTest(TestCase):
         self.assertEqual(self.usuario.cpf_formatado, '123.456.789-01')
 
     def test_cpf_mascarado(self):
-        self.assertEqual(self.usuario.cpf_marcarado, '***.456.***-**')
+        self.assertEqual(self.usuario.cpf_marcarado, '***.456.789-**')
 
     def test_telefone_formatado(self):
         self.assertEqual(self.usuario.telefone_formatado, '(11) 99999-9999')

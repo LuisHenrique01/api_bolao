@@ -74,7 +74,7 @@ class Jogo(BaseModel):
         return str(self)
 
     def acertou_palpite(self, casa: int, fora: int) -> bool:
-        if self.placar_casa == None or self.placar_fora == None:
+        if self.placar_casa is None or self.placar_fora is None:
             return None
         return casa == self.placar_casa and fora == self.placar_fora
 

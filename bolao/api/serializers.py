@@ -145,7 +145,7 @@ class BilheteCriarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bilhete
         fields = '__all__'
-    
+
     def validate(self, attrs):
         if attrs['usuario'].carteira.saque_valido(attrs['bolao'].valor_palpite):
             return super().validate(attrs)
