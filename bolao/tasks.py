@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, timezone
 from celery import shared_task, current_app, Task
 from celery.utils.log import get_task_logger
 
@@ -25,7 +25,8 @@ def buscar_jogos(self):
         raise Exception()
 
     for jogo in criados:
-        eta = jogo.data + timedelta(hours=2)
+        data_utc = jogo.data.astimezone(timezone.utc)
+        eta = data_utc + timedelta(hours=2)
         current_app.send_task('bolao.tasks.conferir_resultado', args=(jogo.id_externo, ), eta=eta)
 
 

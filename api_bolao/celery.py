@@ -1,5 +1,5 @@
 import os
-from api_bolao.celery import Celery
+from celery import Celery
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'api_bolao.settings')
 
