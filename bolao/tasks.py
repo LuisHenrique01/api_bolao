@@ -1,13 +1,10 @@
 from datetime import timedelta, timezone
 from celery import shared_task, current_app, Task
-from celery.utils.log import get_task_logger
 
 from bolao import STATUS_JOGO_FINALIZADO_API
 from .models import Bolao, Campeonato, Jogo
 from core.network.football import API
 
-
-logger = get_task_logger(__name__)
 
 class BaseTaskWithRetry(Task):
     autoretry_for = (Exception, )
