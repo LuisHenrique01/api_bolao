@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     # Libs
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_celery_beat',
     # Apps
     'usuario',
     'core',
@@ -123,7 +124,6 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15)
 }
 
-
 AUTH_USER_MODEL = 'usuario.Usuario'
 
 # Internationalization
@@ -147,8 +147,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # Para rodar a psycopg2
 # sudo apt install libpq-dev
+# RUN apk update \
+#     && apk add postgresql-dev gcc python3-dev musl-dev
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -156,3 +159,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL')
 EMAIL_HOST_PASSWORD = os.getenv('SENHA_EMAIL')
+
+# Celery
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_BROKER")

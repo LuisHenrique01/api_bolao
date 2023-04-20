@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 
 from core.models import BaseModel
 from usuario.models import Usuario
-from . import VENCEDOR_CHOICES, STATUS_BOLAO
+from . import VENCEDOR_CHOICES, STATUS_BOLAO, STATUS_JOGO_FINALIZADO_API
 
 from core.utils import gerar_codigo, get_taxa_banca
 
@@ -78,6 +78,10 @@ class Jogo(BaseModel):
             return None
         return casa == self.placar_casa and fora == self.placar_fora
 
+    @property
+    def finalizado(self):
+        return self.status in STATUS_JOGO_FINALIZADO_API
+
     def __str__(self):
         return f'{self.time_casa} vs {self.time_fora}'
 
@@ -142,24 +146,29 @@ class Bolao(BaseModel):
 
     @transaction.atomic
     def finalizar_bolao(self):
-        vencedores = self.buscar_vencedores()
-        if len(vencedores) > 0:
-            self.pagar_vencedores(vencedores)
-        elif len(vencedores) == 0 and self.estorno:
-            self.estornar_bolao()
-        elif len(vencedores) == 0 and not self.estorno:
-            self.dividir_entre_banca_e_criador()
-        else:
-            self.cancelar_bolao()
-        self.status = STATUS_BOLAO['FINALIZADO']
-        self.save()
+        if self.jogos_finalizados:
+            vencedores = self.buscar_vencedores()
+            if len(vencedores) > 0:
+                self.pagar_vencedores(vencedores)
+            elif len(vencedores) == 0 and self.estorno:
+                self.estornar_bolao()
+            elif len(vencedores) == 0 and not self.estorno:
+                self.dividir_entre_banca_e_criador()
+            else:
+                self.cancelar_bolao()
+            self.status = STATUS_BOLAO['FINALIZADO']
+            self.save()
 
     @property
     def status_atualizado(self):
-        for jogo in self.jogos:
+        for jogo in self.jogos.all():
             if jogo.data <= timezone.now():
                 return STATUS_BOLAO['JOGO INICIADO']
         return self.status
+
+    @property
+    def jogos_finalizados(self):
+        return any([jogo.finalizado for jogo in self.jogos.all()])
 
     def __str__(self):
         return f'Aposta: {self.valor_palpite}|Código: {self.codigo}'
