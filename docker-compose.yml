@@ -4,15 +4,6 @@ services:
   redis:
     image: redis:alpine
 
-  db:
-    image: postgres:latest
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-
   django:
     build:
       context: .
@@ -21,12 +12,9 @@ services:
              python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/code
-    ports:
-      - 8000:8000
     env_file: ./.env
     depends_on:
       - redis
-      - db
 
   celery:
     build:
@@ -37,19 +25,14 @@ services:
     env_file: ./.env
     depends_on:
       - redis
-      - db
 
   flower:
     build:
       context: .
     command: >
-      sh -c "celery -A api_bolao flower --port=5555 --broker=redis://redis:6379/0"
+      sh -c "celery -A api_bolao flower --port=5555 --broker=$CELERY_BROKER"
     ports:
       - 5555:5555
     env_file: ./.env
     depends_on:
       - redis
-      - celery
-
-volumes:
-  postgres_data:
