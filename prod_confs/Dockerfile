@@ -1,0 +1,20 @@
+FROM python:3.10
+
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /code
+
+COPY requirements.txt /code/
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . /code/
+
+RUN --mount=type=secret,id=_env,dst=/etc/secrets/.env cat /etc/secrets/.env
+
+ARG ENV_FILE_PATH=/etc/secrets/.env
+ENV ENV_FILE_PATH=${ENV_FILE_PATH}
+RUN set -o allexport && source ${ENV_FILE_PATH} && set +o allexport
+
+CMD ["sh", "-c", "python manage.py migrate && \
+    gunicorn myproject.wsgi:application --bind 0.0.0.0:8000 && \
+    celery -A myproject worker --loglevel=INFO"]
