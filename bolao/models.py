@@ -146,7 +146,7 @@ class Bolao(BaseModel):
 
     @transaction.atomic
     def finalizar_bolao(self):
-        if self.jogos_finalizados:
+        if self.jogos_finalizados and self.status != STATUS_BOLAO['FINALIZADO']:
             vencedores = self.buscar_vencedores()
             if len(vencedores) > 0:
                 self.pagar_vencedores(vencedores)

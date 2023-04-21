@@ -25,7 +25,7 @@ def buscar_jogos(self):
         data_utc = jogo.data.astimezone(timezone.utc)
         eta = data_utc + timedelta(hours=2)
         current_app.send_task('bolao.tasks.conferir_resultado', args=(jogo.id_externo, ), eta=eta)
-
+    return len(criados)  # Return a quantidade de Jogos adicionados.
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
 def conferir_resultado(self, id_externo: str):
@@ -37,6 +37,7 @@ def conferir_resultado(self, id_externo: str):
         raise Exception()
 
     current_app.send_task('bolao.tasks.finalizar_boloes', args=(jogo.id_externo, ))
+    return jogo.placar
 
 
 @shared_task
@@ -44,3 +45,4 @@ def finalizar_boloes(id_externo: str):
     boloes = Bolao.objects.filter(jogos__id_externo__in=[id_externo])
     for bolao in boloes:
         bolao.finalizar_bolao()
+    return bolao.status
