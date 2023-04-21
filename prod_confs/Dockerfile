@@ -9,9 +9,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /code/
 
-RUN --mount=type=secret,id=_env,dst=/etc/secrets/.env cat .env
+RUN --mount=type=secret,id=_env,dst=/etc/secrets/.env cat > .env
 
-RUN ls 
+RUN export $(egrep -v '^#' .env | xargs)
 
 CMD ["sh", "-c", "python manage.py migrate && \
     gunicorn myproject.wsgi:application --bind 0.0.0.0:8000 && \
