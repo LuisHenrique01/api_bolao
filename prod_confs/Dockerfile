@@ -11,7 +11,8 @@ COPY . /code/
 
 RUN --mount=type=secret,id=_env,dst=/etc/secrets/.env cat /etc/secrets/.env
 
-RUN export $(egrep -v '^#' /etc/secrets/.env | xargs)
+COPY /etc/secrets/.env /code/
+RUN export $(egrep -v '^#' .env | xargs)
 
 CMD ["sh", "-c", "python manage.py migrate && \
     gunicorn myproject.wsgi:application --bind 0.0.0.0:8000 && \
