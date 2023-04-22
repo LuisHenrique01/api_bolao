@@ -32,5 +32,5 @@ ENV MAX_PALPITE=${MAX_PALPITE}
 ENV MIN_PALPITE=${MIN_PALPITE}
 
 CMD ["sh", "-c", "python manage.py migrate && \
-    gunicorn myproject.wsgi:application --bind 0.0.0.0:8000 && \
-    celery -A myproject worker --loglevel=INFO"]
+    gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000 && \
+    celery -A api_bolao worker --loglevel=INFO"]
