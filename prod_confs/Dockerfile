@@ -56,6 +56,6 @@ RUN python manage.py collectstatic --noinput
 
 RUN python manage.py migrate
 
-RUN celery -A api_bolao worker --loglevel=INFO
+RUN celery -A api_bolao worker > logs.txt
 
 CMD ["sh", "-c", "gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000"]
