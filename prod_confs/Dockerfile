@@ -6,10 +6,6 @@ WORKDIR /code
 RUN mkdir static
 COPY . /code/
 
-RUN pip install --no-cache-dir -r requirements.txt
-
-RUN python manage.py collectstatic --noinput
-
 ENV DB_USER=${DB_USER}
 ENV DB_PASSWORD=${DB_PASSWORD}
 ENV DB_NAME=${DB_NAME}
@@ -31,6 +27,10 @@ ENV MAX_TAXA_CRIADOR=${MAX_TAXA_CRIADOR}
 ENV MIN_TAXA_CRIADOR=${MIN_TAXA_CRIADOR}
 ENV MAX_PALPITE=${MAX_PALPITE}
 ENV MIN_PALPITE=${MIN_PALPITE}
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN python manage.py collectstatic --noinput
 
 CMD ["sh", "-c", "python manage.py migrate && \
     gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000 && \
