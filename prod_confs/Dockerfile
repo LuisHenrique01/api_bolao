@@ -54,4 +54,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN python manage.py collectstatic --noinput
 
-CMD ["sh", "-c", "python manage.py migrate;gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000;celery -A api_bolao worker --loglevel=INFO;"]
+CMD ["sh", "-c", "python manage.py migrate;celery -A api_bolao worker --loglevel=INFO;gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000;"]
