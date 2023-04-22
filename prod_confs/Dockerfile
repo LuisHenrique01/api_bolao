@@ -4,13 +4,11 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /code
 RUN mkdir static
+COPY . /code/
 
-COPY requirements.txt /code/
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN python manage.py collectstatic --noinput
-
-COPY . /code/
 
 ENV DB_USER=${DB_USER}
 ENV DB_PASSWORD=${DB_PASSWORD}
