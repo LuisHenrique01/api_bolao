@@ -4,7 +4,6 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /code
 RUN mkdir static
-COPY systemd/celery.service /etc/systemd/system/
 COPY . /code/
 
 ARG DB_USER=${DB_USER}
@@ -57,7 +56,6 @@ RUN python manage.py collectstatic --noinput
 
 RUN python manage.py migrate
 
-#RUN celery -A api_bolao worker > logs.txt
-RUN systemctl enable celery
+#RUN celery -A api_bolao worker -D
 
-CMD ["sh", "-c", "gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000"]
+CMD ["sh", "-c", "celery -A api_bolao worker -D;gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000;"]
