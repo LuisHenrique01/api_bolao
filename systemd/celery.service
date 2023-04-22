@@ -1,0 +1,13 @@
+[Unit]
+Description=Celery Service
+After=network.target
+
+[Service]
+Type=forking
+User=root
+WorkingDirectory=/code
+ExecStart=celery -A myproject worker -l info
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
