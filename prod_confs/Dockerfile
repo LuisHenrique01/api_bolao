@@ -7,6 +7,10 @@ WORKDIR /code
 COPY requirements.txt /code/
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN python manage.py collectstatic --noinput
+
+COPY static/ /code/static/
+
 COPY . /code/
 
 ENV DB_USER=${DB_USER}
