@@ -27,6 +27,7 @@ def buscar_jogos(self):
         current_app.send_task('bolao.tasks.conferir_resultado', args=(jogo.id_externo, ), eta=eta)
     return len(criados)  # Return a quantidade de Jogos adicionados.
 
+
 @shared_task(bind=True, base=BaseTaskWithRetry)
 def conferir_resultado(self, id_externo: str):
     jogo = Jogo.objects.get(id_externo=id_externo)
