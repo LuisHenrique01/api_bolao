@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - prod
 
 env:
   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
