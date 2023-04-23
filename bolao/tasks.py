@@ -8,9 +8,7 @@ from core.network.football import API
 
 class BaseTaskWithRetry(Task):
     autoretry_for = (Exception, )
-    retry_kwargs = {'countdown': 180}
-    retry_backoff = 120
-    retry_jitter = True
+    retry_kwargs = {'countdown': 240}
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
