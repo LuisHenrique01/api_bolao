@@ -56,6 +56,6 @@ RUN python manage.py collectstatic --noinput
 
 RUN python manage.py migrate
 
-#RUN celery -A api_bolao worker -D
+ENTRYPOINT ["sh", "-c"]
 
-CMD ["sh", "-c", "celery -A api_bolao worker -D;gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000;"]
+CMD ["celery -A api_bolao worker -D;gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000;"]

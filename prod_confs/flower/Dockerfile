@@ -12,4 +12,6 @@ ENV CELERY_BROKER=${CELERY_BROKER}
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["sh", "-c", "celery flower --app tasks --loglevel info"]
+ENTRYPOINT ["sh", "-c"]
+
+CMD ["celery flower --app tasks --loglevel info"]
