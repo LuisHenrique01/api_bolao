@@ -146,11 +146,23 @@ class API:
             return VENCEDOR_CHOICES['EMPATE']
 
     @classmethod
+    def filtrar_resultado(cls, score: dict, goals: dict):
+        placar_casa, placar_fora = goals['home'], goals['away']
+        if score['extratime']['home']:
+            placar_casa -= score['extratime']['home']
+        if score['extratime']['away']:
+            placar_fora -= score['extratime']['away']
+        return placar_casa, placar_fora
+
+    @classmethod
     def salvar_resultdo(cls, data: dict, jogo: Jogo):
         placar_casa = data["score"]["fulltime"]["home"]
         placar_fora = data["score"]["fulltime"]["away"]
-        jogo.status = data["fixture"]["status"]["short"]
+        status = data["fixture"]["status"]["short"]
+        if status in STATUS_JOGO_FINALIZADO_API.split('-') and placar_casa is None and placar_fora is None:
+            placar_casa, placar_fora = cls.filtrar_resultado(data["score"], data["goals"])
         jogo.vencedor = cls.obter_vencedor(placar_casa, placar_fora)
+        jogo.status = status
         jogo.placar_casa = placar_casa
         jogo.placar_fora = placar_fora
         jogo.save()
