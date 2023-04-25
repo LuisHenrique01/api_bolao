@@ -19,4 +19,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT ["sh", "-c"]
 
-CMD ["celery flower --app tasks --loglevel info --basic_auth=$USER:$PASSWORD"]
+CMD ["celery -A api_bolao flower --basic_auth=$USER:$PASSWORD"]
