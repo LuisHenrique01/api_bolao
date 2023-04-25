@@ -171,3 +171,4 @@ EMAIL_HOST_PASSWORD = os.getenv('SENHA_EMAIL')
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_BROKER")
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
