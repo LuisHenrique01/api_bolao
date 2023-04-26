@@ -9,6 +9,12 @@ from core.network.football import API
 class BaseTaskWithRetry(Task):
     autoretry_for = (Exception, )
     retry_kwargs = {'countdown': 240}
+    max_retries = 5
+
+    def retry(self, *args, **kwargs):
+        if self.request.retries > 2: 
+            self.retry_kwargs['countdown'] += 240
+        super(BaseTaskWithRetry, self).retry(*args, **kwargs)
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)

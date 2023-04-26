@@ -1,0 +1,743 @@
+_type: export
+__export_format: 4
+__export_date: 2023-04-26T17:30:34.096Z
+__export_source: insomnia.desktop.app:v2021.6.0
+resources:
+  - _id: req_660707d032b34731a946134c5468fd33
+    parentId: fld_03bb8f347e0045dca51b2741018acfcb
+    modified: 1680472797514
+    created: 1680472348748
+    url: "{{ _.localhost }}bolao/campeonato/"
+    name: Campeonatos
+    description: Autenticação não é necessário.
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1680472348748
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_03bb8f347e0045dca51b2741018acfcb
+    parentId: wrk_631440c3787a48fcaebfa50164c8386a
+    modified: 1680472304612
+    created: 1680472304612
+    name: Bolão
+    description: ""
+    environment: {}
+    environmentPropertyOrder: null
+    metaSortKey: -1680472304612
+    _type: request_group
+  - _id: wrk_631440c3787a48fcaebfa50164c8386a
+    parentId: null
+    modified: 1679712230364
+    created: 1679712222507
+    name: API  Bolão
+    description: ""
+    scope: collection
+    _type: workspace
+  - _id: req_81eda5be38184364bc27d33e0ece7248
+    parentId: fld_03bb8f347e0045dca51b2741018acfcb
+    modified: 1680660509452
+    created: 1680472719302
+    url: "{{ _.localhost }}bolao/time/"
+    name: Times
+    description: Autenticação não é necessário.
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1680092360234.5
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_d0c78f0a03754e4ab86cb91bc6d8cad6
+    parentId: fld_03bb8f347e0045dca51b2741018acfcb
+    modified: 1680472837573
+    created: 1680472833752
+    url: "{{ _.localhost }}bolao/jogo/"
+    name: Jogos
+    description: Autenticação não é necessário.
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1679902365977.75
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_acad6aee26224170a7c51ecf8c085c95
+    parentId: fld_03bb8f347e0045dca51b2741018acfcb
+    modified: 1680660750891
+    created: 1680488182541
+    url: "{{ _.localhost }}bolao/"
+    name: Criar bolão
+    description: Autenticação é necessário.
+    method: POST
+    body:
+      mimeType: application/json
+      text: >-
+        {
+        	"valor_palpite": 5,
+        	"jogos": ["8327fffb-f48b-468f-8f66-678421e5824e", "ffb67946-2305-45b3-91cc-c9c0213a318d"],
+        	"estorno": true,
+        	"taxa_criador": 4,
+        	"codigo": "0E42D5"
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5128dbc8564345688e52f77efd0904a9
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwNTc3NjU1LCJpYXQiOjE2ODA1NzQwNTUsImp0aSI6Ijc5YTRiZGI4MmJiYjQ3NTZiOGI3ZjI0ZmYyZjIwOTY1IiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.QaC3fn8AJkZTgS_b_Z_iJeGyryRYJmmcsoCud2LhFrM
+    metaSortKey: -1679854867413.5625
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_0f23b2b568264edfa44bab0fb307eb7d
+    parentId: fld_03bb8f347e0045dca51b2741018acfcb
+    modified: 1680660720510
+    created: 1680482924434
+    url: "{{ _.localhost }}bolao/bolao/"
+    name: Listar bolões
+    description: Autenticação não é necessário.
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwNjYzODc4LCJpYXQiOjE2ODA2NjAyNzgsImp0aSI6IjJhYzlkMjIyYWE0MjQ0ZWQ4ZTE3MDE1NDU3OWNiNjExIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.vJYvvXbrx7FSv2RnagXfe9EsoHl-FYsutajM1_YYFwM
+    metaSortKey: -1679807368849.375
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_3dc55b9d46cc4ecc8fcd19e2af8dce1c
+    parentId: fld_03bb8f347e0045dca51b2741018acfcb
+    modified: 1680660737659
+    created: 1680484449630
+    url: "{{ _.localhost }}bolao/bolao/meus-boloes/"
+    name: Listar meus bolões
+    description: Autenticação é necessário.
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwNjYzODc4LCJpYXQiOjE2ODA2NjAyNzgsImp0aSI6IjJhYzlkMjIyYWE0MjQ0ZWQ4ZTE3MDE1NDU3OWNiNjExIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.vJYvvXbrx7FSv2RnagXfe9EsoHl-FYsutajM1_YYFwM
+    metaSortKey: -1679759870285.1875
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_5fad0fcacf154e0f9de38c486689c25c
+    parentId: fld_03bb8f347e0045dca51b2741018acfcb
+    modified: 1680664516781
+    created: 1680660189147
+    url: "{{ _.localhost }}bolao/bilhete/"
+    name: Listar meus bilhetes
+    description: Autenticação não é necessário.
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwNjY3NTE3LCJpYXQiOjE2ODA2NjAyNzgsImp0aSI6ImEwNzYxZWNjODg5MDQ0NTM4MzQ3MTg0NmI5MDFjYWYyIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.1aF8yJlk4_vMHDUKlWgxQevxgVi8Uz_3oOokTwUAgLM
+    metaSortKey: -1679747995644.1406
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_a366f08eafdb421f848cce0a36a1041d
+    parentId: fld_03bb8f347e0045dca51b2741018acfcb
+    modified: 1682530112098
+    created: 1680662099866
+    url: "{{ _.localhost }}bolao/bilhete/"
+    name: Criar bilhete
+    description: Autenticação não é necessário.
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+            "bolao": "1d560865-4d1a-4a5a-9357-39e72450085f",
+            "palpites": [
+              {
+                "jogo": "8327fffb-f48b-468f-8f66-678421e5824e",
+                "placar_casa": 4,
+                "placar_fora": 0
+              },
+              {
+                "jogo": "c93ab720-1365-42cc-9ee2-e56bdaca54b6",
+                "placar_casa": 2,
+                "placar_fora": 4
+              }
+            ]
+          }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_c6533560ac6f4a308d72efa65729a67f
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwNjY3NTE3LCJpYXQiOjE2ODA2NjAyNzgsImp0aSI6ImEwNzYxZWNjODg5MDQ0NTM4MzQ3MTg0NmI5MDFjYWYyIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.1aF8yJlk4_vMHDUKlWgxQevxgVi8Uz_3oOokTwUAgLM
+    metaSortKey: -1679730183682.5703
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_afabe7f1011542d08112b6f7199ff873
+    parentId: fld_aba42b4c162c415eba852cdaefe5241e
+    modified: 1680447982485
+    created: 1680060372055
+    url: "{{ _.localhost }}usuario/carteira/"
+    name: Buscar carteira
+    description: Busca os dados de carteira do usuário atual.
+    method: GET
+    body:
+      mimeType: application/json
+      text: ""
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwMDYzOTI2LCJpYXQiOjE2ODAwNjAzMjYsImp0aSI6ImEwZTM2NWUzOGQ5YjRkMTNiMTkwNjNkMTVkNmZmZjNmIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.QT3XKTjHO_DdSVtLE3jpoqXklxgwjOCw6eZotI60tbk
+    metaSortKey: -1667182900384.6094
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_aba42b4c162c415eba852cdaefe5241e
+    parentId: wrk_631440c3787a48fcaebfa50164c8386a
+    modified: 1680060354723
+    created: 1680060354723
+    name: Carteira
+    description: ""
+    environment: {}
+    environmentPropertyOrder: null
+    metaSortKey: -1680060354723
+    _type: request_group
+  - _id: req_f33404aaa4074104af5c851380fdd782
+    parentId: fld_aba42b4c162c415eba852cdaefe5241e
+    modified: 1680448034581
+    created: 1680062403710
+    url: "{{ _.localhost }}usuario/carteira/historico/"
+    name: Buscar histórico da carteira
+    description: Busca o histórico de transferências do usuário atual.
+    method: GET
+    body:
+      mimeType: application/json
+      text: ""
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwMDYzOTI2LCJpYXQiOjE2ODAwNjAzMjYsImp0aSI6ImEwZTM2NWUzOGQ5YjRkMTNiMTkwNjNkMTVkNmZmZjNmIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.QT3XKTjHO_DdSVtLE3jpoqXklxgwjOCw6eZotI60tbk
+    metaSortKey: -1667083460136.3047
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_5d79acb1674643328280c0e743f288ad
+    parentId: fld_aba42b4c162c415eba852cdaefe5241e
+    modified: 1680448122982
+    created: 1680224897999
+    url: "{{ _.localhost }}usuario/carteira/depositar/"
+    name: Depositar
+    description: |-
+      Cria uma solicitação de deposito para o usuário atual.
+       - Retorna o QRCode Pix. 
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"valor": 100
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwMjMzNzQ2LCJpYXQiOjE2ODAyMjQ4NzUsImp0aSI6ImZmZmZhZTA5YjI2MDQxNDg5ZjNiMzAwZTM3MDc2M2JjIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.79UxaalOhbnwq6ptVQdx_L3Gc1eHpQh_HeG5m1N9sns
+    metaSortKey: -1667033740012.1523
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_dfab80115b974c19bdd4bf3b3133462b
+    parentId: fld_aba42b4c162c415eba852cdaefe5241e
+    modified: 1680448259632
+    created: 1680232282159
+    url: "{{ _.localhost }}usuario/carteira/sacar/"
+    name: Sacar
+    description: >-
+      Inicia uma solicitação de saque para o usuário atual.
+       - Os dados de Pix do usuário deve conter os mesmo dados cadastrados pois uma validação de indentidade será ser aplicada.
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"valor": 50,
+        	"pix": "89994619853"
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwMjMzNzQ2LCJpYXQiOjE2ODAyMjQ4NzUsImp0aSI6ImZmZmZhZTA5YjI2MDQxNDg5ZjNiMzAwZTM3MDc2M2JjIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.79UxaalOhbnwq6ptVQdx_L3Gc1eHpQh_HeG5m1N9sns
+    metaSortKey: -1667008879950.0762
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_26c9e00cb5ca43c481d130b1038e6507
+    parentId: fld_dd2a1427f190482e810d60446de3f692
+    modified: 1682530213276
+    created: 1679712308814
+    url: "{{ _.localhost }}usuario/token/"
+    name: Login
+    description: |-
+      Tela comum de login.
+      - Access Token life: 1 hora
+      - Refresh Token life: 15 dias
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "email": "luisrocha1201@gmail.com",
+          "password": "SuaSenha"
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_325cf39cbd354fb5ab0da9c6aea1fab2
+    authentication: {}
+    metaSortKey: -1679712371721
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_dd2a1427f190482e810d60446de3f692
+    parentId: wrk_631440c3787a48fcaebfa50164c8386a
+    modified: 1679712384972
+    created: 1679712384972
+    name: Usuário
+    description: ""
+    environment: {}
+    environmentPropertyOrder: null
+    metaSortKey: -1679712384972
+    _type: request_group
+  - _id: req_bac6ec5f41e74bc79293035a8b6fb4fe
+    parentId: fld_dd2a1427f190482e810d60446de3f692
+    modified: 1682530207243
+    created: 1679712433687
+    url: "{{ _.localhost }}usuario/token/refresh/"
+    name: Refresh Token
+    description: "Atualização de Bearer token. "
+    method: POST
+    body:
+      mimeType: application/json
+      text: >-
+        {
+        	"refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY4MTk1NjI3OCwiaWF0IjoxNjgwNjYwMjc4LCJqdGkiOiI1NjlhNDA5Y2QzZWQ0OGM4YWY1NjE1NzVlZjFjNTk2YyIsInVzZXJfaWQiOiIyZDZhNjliZi0wNTNhLTQ1NWQtYTE4Ni03MThlZTY2MTQ1ZWUifQ.2mTqIiXKy5hKfUR9XKcMLg_IBII9oQwOCQQ2nd3Db_w"
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_051070c231124eedace98ecff8263926
+    authentication: {}
+    metaSortKey: -1679712371708.5
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_55ee3fd612314916bcd2e4eeaaf1f76f
+    parentId: fld_dd2a1427f190482e810d60446de3f692
+    modified: 1680448433530
+    created: 1679712371671
+    url: "{{ _.localhost }}usuario/criar/"
+    name: Criar usuário
+    description: Criar um novo usuário.
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"email": "luisrocha@gmail.com",
+        	"password": ")A)A)A)A)A",
+        	"cpf": "29478797085",
+        	"nome": "Luis Henrique",
+        	"data_nascimento": "2002-01-12",
+        	"telefone": "89994619853",
+        	"endereco": {
+        		"cep": "64018500",
+        		"estado": "Piauí",
+        		"cidade": "Teresina",
+        		"bairro": "Vermelha",
+        		"rua": "Av. Barão de Gurgeia",
+        		"numero": "1520",
+        		"complemento": "Pode ser vazio"
+        	},
+        	"permissoes": {
+        		"sms": true,
+        		"email": true
+        	}
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication: {}
+    metaSortKey: -1679712371671
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_3091004873134251ad17cb5386f2e774
+    parentId: fld_dd2a1427f190482e810d60446de3f692
+    modified: 1680448451258
+    created: 1679972796325
+    url: "{{ _.localhost }}usuario/"
+    name: Buscar usuário atual
+    description: Buscar dados de usuário atual.
+    method: GET
+    body:
+      mimeType: application/json
+      text: ""
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwNDAzNzU4LCJpYXQiOjE2ODA0MDAxNTgsImp0aSI6IjY3NjRlMTdkODVkYzRjYmQ5OTk0YTU5OTIxOTIzZjEzIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.mvO-1sqqK_38W7Z6OIuHKyMN2rUwiU3bKhpT2YPeso4
+    metaSortKey: -1676530283725.25
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_be479c35880b4054b9cb34ace919f9f4
+    parentId: fld_dd2a1427f190482e810d60446de3f692
+    modified: 1680448502355
+    created: 1679972611202
+    url: "{{ _.localhost }}usuario/editar/"
+    name: Editar usuário
+    description: |-
+      Editar usuário atual, dados parciais devem ser passados.
+      - CPF e Data de nascimento não são editáveis.
+    method: PATCH
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"telefone": "89994619853",
+        	"permissoes": {
+        		"sms": true
+        	}
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc5OTczNzE2LCJpYXQiOjE2Nzk5NzI2ODksImp0aSI6IjM3NzlmYWU1MjQwMzQyYjM5ZjVlODI5NjA5MmM2ZWExIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.upYSuIsZEQ3junPE3YHA1NRY673sVyDdgxTnhEKERkc
+    metaSortKey: -1673348195779.5
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_160d47b516ca48dd9611a16c2f6a45d8
+    parentId: fld_dd2a1427f190482e810d60446de3f692
+    modified: 1680459055069
+    created: 1680057259983
+    url: "{{ _.localhost }}usuario/criar/codigo-recuperacao-senha/"
+    name: Esqueci minha senha
+    description: |-
+      Procedimento de recuperação de senha.
+      ```javascript
+      {"email": "luisrocha1201@gmail.com"}
+      ```
+      ou
+      ```javascript
+      {"sms": "89994619853"}
+      ```
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"email": "luisrocha1201@gmail.com"
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication: {}
+    metaSortKey: -1670166107833.75
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_782e52aa8a8b4e53ae2d458832ddd31d
+    parentId: fld_dd2a1427f190482e810d60446de3f692
+    modified: 1680459074390
+    created: 1680058733864
+    url: "{{ _.localhost }}usuario/criar/confirmar-codigo/"
+    name: Confirmar código
+    description: Se enviado o Bearer Token o usuário será considerado validado.
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"codigo": "803667"
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwNDAzNzU4LCJpYXQiOjE2ODA0MDAxNTgsImp0aSI6IjY3NjRlMTdkODVkYzRjYmQ5OTk0YTU5OTIxOTIzZjEzIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.mvO-1sqqK_38W7Z6OIuHKyMN2rUwiU3bKhpT2YPeso4
+    metaSortKey: -1668575063860.875
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_56463a1f7d96418490a632efefbdb606
+    parentId: fld_dd2a1427f190482e810d60446de3f692
+    modified: 1680459112349
+    created: 1680059075942
+    url: "{{ _.localhost }}usuario/criar/recuperar-senha/"
+    name: Recuperar senha
+    description: É necessário o envio do código.
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"codigo": "A7F34B681FFA",
+        	"nova_senha": "241002"
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication: {}
+    metaSortKey: -1667779541874.4375
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_0f9343f80bd74dee8619e3e8d6ce4c41
+    parentId: fld_dd2a1427f190482e810d60446de3f692
+    modified: 1680459147990
+    created: 1680059861191
+    url: "{{ _.localhost }}usuario/mudar-senha/"
+    name: Mudar senha
+    description: Você deve enviar a senha atual e a nova senha.
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"senha_atual": "241002",
+        	"nova_senha": "Luis241002"
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwMDYyODkwLCJpYXQiOjE2ODAwNTkyOTAsImp0aSI6ImZiNjA3NGY5YmIyYjQzYTZhYzJjYjllNzFkNGRlOGJiIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.tevGLVlabGAVYh26sR1W2gqkfCoSUZ_52L_BdFUtm68
+    metaSortKey: -1667381780881.2188
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_0a7e728fa8ad4207a96315bd74185eb4
+    parentId: fld_dd2a1427f190482e810d60446de3f692
+    modified: 1680459511087
+    created: 1680399972596
+    url: "{{ _.localhost }}usuario/validar-usuario/"
+    name: Validar usuário
+    description: |-
+      Procedimento para validação de usuário.
+      ```javascript
+      {"forma": "email||sms"}
+      ```
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"forma": "email"
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_5cdb17dfcef049e48d3628425aa8f271
+    authentication:
+      type: bearer
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjgwNDAzNzU4LCJpYXQiOjE2ODA0MDAxNTgsImp0aSI6IjY3NjRlMTdkODVkYzRjYmQ5OTk0YTU5OTIxOTIzZjEzIiwidXNlcl9pZCI6IjJkNmE2OWJmLTA1M2EtNDU1ZC1hMTg2LTcxOGVlNjYxNDVlZSJ9.mvO-1sqqK_38W7Z6OIuHKyMN2rUwiU3bKhpT2YPeso4
+    metaSortKey: -1667282340632.914
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: env_36de3a1610ac43c5c2ae3d0b67afd7286de485a3
+    parentId: wrk_631440c3787a48fcaebfa50164c8386a
+    modified: 1680459472589
+    created: 1679712222536
+    name: Base Environment
+    data:
+      localhost: http://127.0.0.1:8000/api/v1/
+    dataPropertyOrder:
+      "&":
+        - localhost
+    color: null
+    isPrivate: false
+    metaSortKey: 1679712222536
+    _type: environment
+  - _id: jar_36de3a1610ac43c5c2ae3d0b67afd7286de485a3
+    parentId: wrk_631440c3787a48fcaebfa50164c8386a
+    modified: 1679712222539
+    created: 1679712222539
+    name: Default Jar
+    cookies: []
+    _type: cookie_jar
+  - _id: spc_d68612fd59e244538b5bfaec54be08d5
+    parentId: wrk_631440c3787a48fcaebfa50164c8386a
+    modified: 1679712222517
+    created: 1679712222517
+    fileName: API  Boão
+    contents: ""
+    contentType: yaml
+    _type: api_spec
