@@ -16,23 +16,34 @@ class CampeonatoViewSet(ReadOnlyModelViewSet):
     queryset = Campeonato.objects.filter(ativo=True)
     serializer_class = CampeonatoSerializer
     permission_classes = LEITURA_OU_AUTENTICACAO_COMPLETA
+    search_fields = ['nome', 'pais', 'tipo']
+    ordering_fields = ['nome']
 
 
 class TimeViewSet(ReadOnlyModelViewSet):
     queryset = Time.objects.all()
     serializer_class = TimeSerializer
     permission_classes = LEITURA_OU_AUTENTICACAO_COMPLETA
+    search_fields = ['nome']
+    ordering_fields = ['nome']
 
 
 class JogoViewSet(ReadOnlyModelViewSet):
     queryset = Jogo.objects.all()
     serializer_class = JogoSerializer
     permission_classes = LEITURA_OU_AUTENTICACAO_COMPLETA
+    filterset_fields = ['data', 'status']
+    search_fields = ['campeonato__nome', 'time_casa__nome', 'time_fora__nome']
+    ordering_fields = ['data', 'status']
 
 
 class BolaoViewSet(ViewSet):
 
     queryset = Bolao.objects.all()
+    filterset_fields = ['criador', 'estorno', 'taxa_banca__gte', 'taxa_banca__lte', 'taxa_criador__gte',
+                        'taxa_criador__lte', 'status']
+    search_fields = ['codigo', 'jogos__nome']
+    ordering_fields = ['estorno', 'taxa_banca', 'taxa_criador', 'taxa_criador', 'status']
 
     def list(self, request, *args, **kwargs):
         queryset = self.queryset.filter(status=STATUS_BOLAO['ATIVO'])
