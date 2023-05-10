@@ -65,3 +65,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt
     depends_on:
       - api_bolao
+
+volumes:
+  postgres_data:
+  redis_data:
