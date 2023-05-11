@@ -4,6 +4,10 @@ services:
 
   redis:
     image: redis:alpine
+    deploy:
+      resources:
+        limits:
+          memory: 64M
     volumes:
       - redis_data:/etc/redis
 
@@ -19,10 +23,7 @@ services:
   api_bolao:
     build:
       context: .
-      # dockerfile: prod_confs/Dockerfile
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+      dockerfile: prod_confs/Dockerfile
     volumes:
       - .:/code
     ports:
@@ -32,10 +33,21 @@ services:
       - redis
       - db
 
-  celery:
+  celery_worker:
     build:
       context: .
     command: celery -A api_bolao worker -l info
+    volumes:
+      - .:/code
+    env_file: ./.env
+    depends_on:
+      - redis
+      - db
+
+  celery_beat:
+    build:
+      context: .
+    command: celery -A api_bolao beat -l info
     volumes:
       - .:/code
     env_file: ./.env
@@ -47,7 +59,7 @@ services:
     build:
       context: .
     command: >
-      sh -c "celery -A api_bolao flower --port=5555 --broker=redis://redis:6379/0"
+      sh -c "celery -A api_bolao flower --basic_auth=$USER:$PASSWORD"
     ports:
       - 5555:5555
     env_file: ./.env

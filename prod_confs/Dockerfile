@@ -58,4 +58,4 @@ RUN python manage.py migrate
 
 ENTRYPOINT ["sh", "-c"]
 
-CMD ["celery -A api_bolao worker -D;celery -A api_bolao beat --detach;gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000;"]
+CMD ["gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000"]
