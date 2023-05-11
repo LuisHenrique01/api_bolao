@@ -51,8 +51,6 @@ ENV MIN_PALPITE=${MIN_PALPITE}
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN python manage.py collectstatic --noinput
-
 RUN python manage.py migrate
 
 RUN adduser -D userdjango
