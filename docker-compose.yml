@@ -59,7 +59,7 @@ services:
     build:
       context: .
     command: >
-      sh -c "celery -A api_bolao flower --basic_auth=$USER:$PASSWORD"
+      sh -c "celery -A api_bolao flower --basic_auth=$FLOWER_USER:$FLOWER_PASSWORD"
     ports:
       - 5555:5555
     env_file: ./.env
