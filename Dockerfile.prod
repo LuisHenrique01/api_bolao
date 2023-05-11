@@ -3,7 +3,7 @@ FROM python:3.10
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /code
-RUN mkdir staticfile
+RUN mkdir /code/staticfile
 COPY . /code/
 
 ARG DB_USER=${DB_USER}
