@@ -50,8 +50,6 @@ ENV MIN_PALPITE=${MIN_PALPITE}
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN python manage.py collectstatic --noinput
-
 COPY . .
 
 RUN python manage.py migrate
