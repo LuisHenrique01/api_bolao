@@ -23,7 +23,7 @@ services:
   api_bolao:
     build:
       context: .
-      dockerfile: prod_confs/Dockerfile
+      dockerfile: ./prod_confs/Dockerfile
     volumes:
       - .:/code
     ports:
