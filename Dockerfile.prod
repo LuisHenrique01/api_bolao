@@ -3,7 +3,7 @@ FROM python:3.10
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /code
-COPY . /code/
+COPY . .
 
 ARG DB_USER=${DB_USER}
 ARG DB_PASSWORD=${DB_PASSWORD}
@@ -54,5 +54,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python manage.py collectstatic --noinput
 
 RUN python manage.py migrate
+
+RUN adduser -D userdjango
+USER userdjango
 
 ENTRYPOINT ["sh", "-c"]
