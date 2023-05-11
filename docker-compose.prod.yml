@@ -25,8 +25,7 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     command: >
-      "python manage.py collectstatic --noinput &&
-       gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000"
+      "gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - .:/code
     ports:
