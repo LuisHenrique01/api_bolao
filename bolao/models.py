@@ -99,7 +99,7 @@ class Bolao(BaseModel):
     taxa_criador = models.FloatField("Taxa criador", default=0,
                                      validators=[MaxValueValidator(float(os.getenv('MAX_TAXA_CRIADOR'))),
                                                  MinValueValidator(float(os.getenv('MIN_TAXA_CRIADOR')))])
-    palpites_minimos = models.PositiveIntegerField("Palpites mínimos", default=0)
+    bilhetes_minimos = models.PositiveIntegerField("Palpites mínimos", default=0)
     status = models.CharField(max_length=20, choices=STATUS_BOLAO.items(), default=STATUS_BOLAO['ATIVO'])
 
     class Meta:
@@ -149,7 +149,7 @@ class Bolao(BaseModel):
     def finalizar_bolao(self):
         if self.jogos_finalizados and self.status != STATUS_BOLAO['FINALIZADO']:
             vencedores = self.buscar_vencedores()
-            if self.palpites_minimos > self.bilhetes.count():
+            if self.bilhetes_minimos > self.bilhetes.count():
                 self.cancelar_bolao()
                 self.status = STATUS_BOLAO['CANCELADO']
             elif len(vencedores) > 0:

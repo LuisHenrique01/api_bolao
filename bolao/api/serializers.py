@@ -43,7 +43,7 @@ class BolaoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bolao
         fields = ['id', 'criador', 'valor_palpite', 'codigo', 'jogos', 'estorno', 'taxa_banca', 'taxa_criador',
-                  'palpites_minimos', 'status', 'qtd_palpites', 'posivel_retorno', 'vencedores']
+                  'bilhetes_minimos', 'status', 'qtd_palpites', 'posivel_retorno', 'vencedores']
         read_only_fields = ['id']
         extra_kwargs = {'criador': {'write_only': True}}
 
