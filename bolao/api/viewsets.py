@@ -43,7 +43,7 @@ class BolaoViewSet(ViewSet):
     filterset_fields = ['criador', 'estorno', 'taxa_banca__gte', 'taxa_banca__lte', 'taxa_criador__gte',
                         'taxa_criador__lte', 'status']
     search_fields = ['codigo', 'jogos__nome']
-    ordering_fields = ['estorno', 'taxa_banca', 'taxa_criador', 'taxa_criador', 'status']
+    ordering_fields = ['estorno', 'taxa_banca', 'taxa_criador', 'taxa_criador', 'status', 'palpites_minimos']
 
     def list(self, request, *args, **kwargs):
         queryset = self.queryset.filter(status=STATUS_BOLAO['ATIVO'])
