@@ -53,7 +53,7 @@ class JogoAdmin(admin.ModelAdmin):
 @admin.register(Bolao)
 class BolaoAdmin(admin.ModelAdmin):
     list_display = ['codigo', 'criador', 'valor_palpite', 'get_jogos', 'estorno', 'taxa_criador',
-                    'taxa_banca', 'status']
+                    'palpites_minimos', 'taxa_banca', 'status']
     list_filter = ['criador', 'estorno']
     search_fields = ['codigo', 'criador', 'valor_palpite']
     actions = ['cancelar_bolao', 'finalizar_bolao']
