@@ -6,6 +6,11 @@ from usuario.urls import usuarioRouters
 from bolao.urls import bolaoRouters
 
 
+admin.site.site_header = 'Starbet.space'
+admin.site.site_title = 'Starbet.space, a sua plataforma de bolão!'
+admin.site.index_title = 'Starbet.space, a sua plataforma de bolão!'
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Usuário

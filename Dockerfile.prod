@@ -3,8 +3,6 @@ FROM python:3.10
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /code
-RUN mkdir static
-COPY . /code/
 
 ARG DB_USER=${DB_USER}
 ARG DB_PASSWORD=${DB_PASSWORD}
@@ -52,10 +50,13 @@ ENV MIN_PALPITE=${MIN_PALPITE}
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN python manage.py collectstatic --noinput
+COPY . .
 
 RUN python manage.py migrate
 
-ENTRYPOINT ["sh", "-c"]
+RUN adduser -D userdjango
+USER userdjango
 
-CMD ["celery -A api_bolao worker -D;celery -A api_bolao beat --detach;gunicorn api_bolao.wsgi:application --bind 0.0.0.0:8000;"]
+RUN mrkdir logs
+
+ENTRYPOINT ["sh", "-c"]

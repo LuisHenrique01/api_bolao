@@ -44,4 +44,3 @@ def finalizar_boloes(id_externo: str):
     boloes = Bolao.objects.filter(jogos__id_externo__in=[id_externo])
     for bolao in boloes:
         bolao.finalizar_bolao()
-    return bolao.status
