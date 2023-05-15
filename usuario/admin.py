@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 
-from .models import PermissoesNotificacao, Endereco, Usuario, Carteira
+from .models import PermissoesNotificacao, Endereco, Usuario
 
 admin.site.register(PermissoesNotificacao)
 admin.site.register(Endereco)
@@ -40,11 +40,11 @@ class UsuarioAdmin(UserAdmin):
     def bloquear_usuario(self, request, queryset):
         if getattr(request.user, 'is_superuser', False):
             for usuario in queryset:
-                usuario.carteira.bloqueado =True
+                usuario.carteira.bloqueado = True
                 usuario.carteira.save()
-            messages.success(request, f"Usuário(s) bloqueado(s) com sucesso.")
+            messages.success(request, "Usuário(s) bloqueado(s) com sucesso.")
             return
-        messages.error(request, f"Você não tem permissão para realizar essa operação.")
+        messages.error(request, "Você não tem permissão para realizar essa operação.")
 
 
 admin.site.register(Usuario, UsuarioAdmin)

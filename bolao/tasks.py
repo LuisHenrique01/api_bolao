@@ -1,7 +1,7 @@
 from datetime import timedelta, timezone
 from celery import shared_task, current_app, Task
 
-from django.utils import timezone
+from django.utils import timezone as dj_timezone
 from bolao import STATUS_JOGO_FINALIZADO_API
 from .models import Bolao, Campeonato, Jogo
 from core.network.football import API
@@ -53,7 +53,7 @@ def finalizar_boloes(id_externo: str):
 @shared_task
 def atualizar_resultados_antigos():
     try:
-        now = timezone.now()
+        now = dj_timezone.now()
         jogos = Jogo.objects.filter(data=now + timedelta(hours=12))
         API.atualizar_resultados(jogos, many=True)
         for jogo in jogos:
