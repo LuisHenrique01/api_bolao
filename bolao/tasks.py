@@ -1,6 +1,7 @@
 from datetime import timedelta, timezone
 from celery import shared_task, current_app, Task
 
+from django.utils import timezone as dj_timezone
 from bolao import STATUS_JOGO_FINALIZADO_API
 from .models import Bolao, Campeonato, Jogo
 from core.network.football import API
@@ -8,7 +9,10 @@ from core.network.football import API
 
 class BaseTaskWithRetry(Task):
     autoretry_for = (Exception, )
-    retry_kwargs = {'countdown': 240}
+    retry_kwargs = {'countdown': 240,
+                    'max_retries': 5,
+                    'retry_backoff': True,
+                    'retry_backoff_max': 600}
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
@@ -44,3 +48,15 @@ def finalizar_boloes(id_externo: str):
     boloes = Bolao.objects.filter(jogos__id_externo__in=[id_externo])
     for bolao in boloes:
         bolao.finalizar_bolao()
+
+
+@shared_task
+def atualizar_resultados_antigos():
+    try:
+        now = dj_timezone.now()
+        jogos = Jogo.objects.filter(data=now + timedelta(hours=12))
+        API.atualizar_resultados(jogos, many=True)
+        for jogo in jogos:
+            current_app.send_task('bolao.tasks.finalizar_boloes', args=(jogo.id_externo, ))
+    except IndexError:
+        return 'Jogos não encontrados, veja manualmente.'

@@ -3,6 +3,7 @@ FROM python:3.10
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /code
+COPY . .
 
 ARG DB_USER=${DB_USER}
 ARG DB_PASSWORD=${DB_PASSWORD}
@@ -49,8 +50,6 @@ ENV MAX_PALPITE=${MAX_PALPITE}
 ENV MIN_PALPITE=${MIN_PALPITE}
 
 RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
 
 RUN python manage.py migrate
 
