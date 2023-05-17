@@ -1,3 +1,4 @@
+from celery import current_app
 from django.contrib import admin, messages
 
 from . import STATUS_JOGO_FINALIZADO_API, STATUS_BOLAO
@@ -46,6 +47,8 @@ class JogoAdmin(admin.ModelAdmin):
 
     def atualizar_resultados(self, _, queryset):
         if API.atualizar_resultados(queryset):
+            for jogo in queryset:
+                current_app.send_task('bolao.tasks.finalizar_boloes', args=(jogo.id_externo, ))
             queryset = Jogo.objects.all()
         return queryset
 
@@ -53,7 +56,7 @@ class JogoAdmin(admin.ModelAdmin):
 @admin.register(Bolao)
 class BolaoAdmin(admin.ModelAdmin):
     list_display = ['codigo', 'criador', 'valor_palpite', 'get_jogos', 'estorno', 'taxa_criador',
-                    'taxa_banca', 'status']
+                    'bilhetes_minimos', 'taxa_banca', 'status']
     list_filter = ['criador', 'estorno']
     search_fields = ['codigo', 'criador', 'valor_palpite']
     actions = ['cancelar_bolao', 'finalizar_bolao']
