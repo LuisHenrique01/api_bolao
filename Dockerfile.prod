@@ -3,6 +3,7 @@ FROM python:3.10
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /code
+
 COPY . .
 
 ARG DB_USER=${DB_USER}
@@ -49,13 +50,8 @@ ENV MIN_TAXA_CRIADOR=${MIN_TAXA_CRIADOR}
 ENV MAX_PALPITE=${MAX_PALPITE}
 ENV MIN_PALPITE=${MIN_PALPITE}
 
+RUN pip install --upgrade pip
+
 RUN pip install --no-cache-dir -r requirements.txt
-
-RUN python manage.py migrate
-
-RUN adduser -D userdjango
-USER userdjango
-
-RUN mrkdir logs
 
 ENTRYPOINT ["sh", "-c"]
