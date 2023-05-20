@@ -54,7 +54,4 @@ RUN pip install --upgrade pip
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN addgroup -S userdjango && adduser -S userdjango -G userdjango
-USER userdjango
-
 ENTRYPOINT ["sh", "-c"]
