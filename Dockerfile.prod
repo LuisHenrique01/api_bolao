@@ -57,7 +57,3 @@ RUN python manage.py migrate
 
 RUN adduser -D userdjango
 USER userdjango
-
-RUN mrkdir logs
-
-ENTRYPOINT ["sh", "-c"]
