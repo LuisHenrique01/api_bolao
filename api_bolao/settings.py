@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'django_celery_beat',
-    'django_filters',
+    #'django_filters',
     # Apps
     'usuario',
     'core',
@@ -125,7 +125,7 @@ REST_FRAMEWORK = {
         'core.permissions.UsuarioValidado'
     ],
     'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
+        #'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter'
     ],
