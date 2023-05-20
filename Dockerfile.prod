@@ -50,9 +50,11 @@ ENV MIN_TAXA_CRIADOR=${MIN_TAXA_CRIADOR}
 ENV MAX_PALPITE=${MAX_PALPITE}
 ENV MIN_PALPITE=${MIN_PALPITE}
 
+RUN pip install --upgrade pip
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN adduser -D userdjango
+RUN addgroup -S userdjango && adduser -S userdjango -G userdjango
 USER userdjango
 
 ENTRYPOINT ["sh", "-c"]
