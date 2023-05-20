@@ -1,12 +1,13 @@
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 
-from .models import PermissoesNotificacao, Endereco, Usuario
+from .models import PermissoesNotificacao, Endereco, Usuario, HistoricoTransacao
 
 admin.site.register(PermissoesNotificacao)
 admin.site.register(Endereco)
 
 
+@admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):
     fields = ['nome', 'email',   'telefone', 'is_active', 'permissoes', 'endereco']
     fieldsets = None
@@ -47,4 +48,10 @@ class UsuarioAdmin(UserAdmin):
         messages.error(request, "Você não tem permissão para realizar essa operação.")
 
 
-admin.site.register(Usuario, UsuarioAdmin)
+@admin.register(HistoricoTransacao)
+class HistoricoTransacaoAdmin(admin.ModelAdmin):
+
+    fields = ['tipo', 'valor', 'carteira', 'externo', 'pix']
+    ordering = ['created_at']
+    list_filter = ['tipo', 'externo']
+    search_fields = ['valor', 'carteira']
