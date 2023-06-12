@@ -45,7 +45,10 @@ INSTALLED_APPS = [
     # Apps
     'usuario',
     'core',
-    'bolao'
+    'bolao',
+    # 'models2puml',
+    # 'puml_generator',
+    # 'django_extensions'
 ]
 
 MIDDLEWARE = [

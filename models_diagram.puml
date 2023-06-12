@@ -1,0 +1,205 @@
+@startuml 
+class "PermissoesNotificacao <Usuario>" as usuario.PermissoesNotificacao #f4f3d6 {
+    Pemissão para notificação
+    --
+    + id (UUIDField)
+    + created_at (DateTimeField)
+    + updated_at (DateTimeField)
+    + sms (BooleanField)
+    + email (BooleanField)
+    + sms_verificado (BooleanField)
+    + email_verificado (BooleanField)
+    --
+}
+
+
+class "CodigosDeValidacao <Usuario>" as usuario.CodigosDeValidacao #f4f3d6 {
+    Código de validação
+    --
+    + id (UUIDField)
+    + created_at (DateTimeField)
+    + updated_at (DateTimeField)
+    ~ permissao (ForeignKey)
+    + tipo (CharField)
+    + codigo (CharField)
+    + confirmado (BooleanField)
+    --
+}
+usuario.CodigosDeValidacao -- usuario.PermissoesNotificacao
+
+
+class "Endereco <Usuario>" as usuario.Endereco #f4f3d6 {
+    Endereço
+    --
+    + id (UUIDField)
+    + created_at (DateTimeField)
+    + updated_at (DateTimeField)
+    + cep (CharField)
+    + estado (CharField)
+    + cidade (CharField)
+    + bairro (CharField)
+    + rua (CharField)
+    + numero (CharField)
+    + complemento (CharField)
+    --
+}
+
+
+class "Carteira <Usuario>" as usuario.Carteira #f4f3d6 {
+    carteira
+    --
+    + id (UUIDField)
+    + created_at (DateTimeField)
+    + updated_at (DateTimeField)
+    + saldo (DecimalField)
+    + bloqueado (BooleanField)
+    + pix (CharField)
+    --
+}
+
+
+class "Usuario <Usuario>" as usuario.Usuario #f4f3d6 {
+    Usuário
+    --
+    + password (CharField)
+    + last_login (DateTimeField)
+    + is_superuser (BooleanField)
+    + id (UUIDField)
+    + email (EmailField)
+    + cpf (CharField)
+    + nome (CharField)
+    + data_nascimento (DateField)
+    + telefone (CharField)
+    ~ endereco (ForeignKey)
+    ~ permissoes (OneToOneField)
+    ~ carteira (OneToOneField)
+    + is_staff (BooleanField)
+    + is_active (BooleanField)
+    + date_joined (DateTimeField)
+    # groups (ManyToManyField)
+    # user_permissions (ManyToManyField)
+    --
+}
+usuario.Usuario -- usuario.Endereco
+usuario.Usuario -- usuario.PermissoesNotificacao
+usuario.Usuario -- usuario.Carteira
+
+
+class "HistoricoTransacao <Core>" as core.HistoricoTransacao #e8f4d6 {
+    historico transacao
+    --
+    + id (UUIDField)
+    + created_at (DateTimeField)
+    + updated_at (DateTimeField)
+    + tipo (CharField)
+    + valor (DecimalField)
+    ~ carteira (ForeignKey)
+    + externo (BooleanField)
+    + pix (CharField)
+    --
+}
+core.HistoricoTransacao -- usuario.Carteira
+
+
+class "Campeonato <Bolao>" as bolao.Campeonato #d6f4f1 {
+    Campeonato
+    --
+    + id (UUIDField)
+    + created_at (DateTimeField)
+    + updated_at (DateTimeField)
+    + nome (CharField)
+    + pais (CharField)
+    + tipo (CharField)
+    + id_externo (CharField)
+    + logo (URLField)
+    + ativo (BooleanField)
+    + temporada_atual (CharField)
+    --
+}
+
+
+class "Time <Bolao>" as bolao.Time #d6f4f1 {
+    Time
+    --
+    + id (UUIDField)
+    + created_at (DateTimeField)
+    + updated_at (DateTimeField)
+    + id_externo (CharField)
+    + nome (CharField)
+    + logo (URLField)
+    --
+}
+
+
+class "Jogo <Bolao>" as bolao.Jogo #d6f4f1 {
+    Jogo
+    --
+    + id (UUIDField)
+    + created_at (DateTimeField)
+    + updated_at (DateTimeField)
+    + id_externo (CharField)
+    ~ time_casa (ForeignKey)
+    ~ time_fora (ForeignKey)
+    + status (CharField)
+    + data (DateTimeField)
+    + placar_casa (IntegerField)
+    + placar_fora (IntegerField)
+    + vencedor (CharField)
+    ~ campeonato (ForeignKey)
+    --
+}
+bolao.Jogo -- bolao.Time
+bolao.Jogo -- bolao.Time
+bolao.Jogo -- bolao.Campeonato
+
+
+class "Bolao <Bolao>" as bolao.Bolao #d6f4f1 {
+    Bolão
+    --
+    + id (UUIDField)
+    + created_at (DateTimeField)
+    + updated_at (DateTimeField)
+    ~ criador (ForeignKey)
+    + valor_palpite (DecimalField)
+    + codigo (CharField)
+    + estorno (BooleanField)
+    + taxa_banca (FloatField)
+    + taxa_criador (FloatField)
+    + bilhetes_minimos (PositiveIntegerField)
+    + status (CharField)
+    # jogos (ManyToManyField)
+    --
+}
+bolao.Bolao -- usuario.Usuario
+bolao.Bolao *--* bolao.Jogo
+
+
+class "Bilhete <Bolao>" as bolao.Bilhete #d6f4f1 {
+    Bilhete
+    --
+    + id (UUIDField)
+    + created_at (DateTimeField)
+    + updated_at (DateTimeField)
+    ~ usuario (ForeignKey)
+    ~ bolao (ForeignKey)
+    --
+}
+bolao.Bilhete -- usuario.Usuario
+bolao.Bilhete -- bolao.Bolao
+
+
+class "Palpite <Bolao>" as bolao.Palpite #d6f4f1 {
+    Palpite
+    --
+    + id (BigAutoField)
+    ~ jogo (ForeignKey)
+    ~ bilhete (ForeignKey)
+    + placar_casa (IntegerField)
+    + placar_fora (IntegerField)
+    --
+}
+bolao.Palpite -- bolao.Jogo
+bolao.Palpite -- bolao.Bilhete
+
+
+@enduml
