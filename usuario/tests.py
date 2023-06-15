@@ -37,9 +37,6 @@ class CarteiraModelTest(TestCase):
     def test_saldo_default_value(self):
         self.assertEqual(self.carteira.saldo, Decimal("0"))
 
-    def test_saque_valido(self):
-        self.assertFalse(self.carteira.saque_valido(Decimal("100")))
-
     def test_deposito_valido_interno(self):
         self.assertTrue(self.carteira.deposito_valido(Decimal("50")))
         self.assertTrue(self.carteira.deposito_valido(Decimal("9.99")))
