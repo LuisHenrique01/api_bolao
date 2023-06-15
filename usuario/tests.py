@@ -32,12 +32,10 @@ class CarteiraModelTest(TestCase):
 
     def setUp(self):
         self.carteira = Carteira.objects.create()
+        self.carteira2 = Carteira.objects.create()
 
     def test_saldo_default_value(self):
         self.assertEqual(self.carteira.saldo, Decimal("0"))
-
-    def test_saque_valido(self):
-        self.assertFalse(self.carteira.saque_valido(Decimal("100")))
 
     def test_deposito_valido_interno(self):
         self.assertTrue(self.carteira.deposito_valido(Decimal("50")))
@@ -59,6 +57,37 @@ class CarteiraModelTest(TestCase):
     def test_depositar_raises_exception_when_value_is_below_min_deposito(self):
         with self.assertRaises(DepositoInvalidoException):
             self.carteira.depositar(Decimal("9.99"), externo=True)
+
+    def test_saque_valido(self):
+        self.carteira2.depositar(Decimal("100"))
+        # Usuário bloqueado
+        self.carteira2.bloqueado = True
+        self.assertFalse(self.carteira2.saque_valido(Decimal('50.00')))
+        self.carteira2.bloqueado = False
+
+        self.assertTrue(self.carteira2.saque_valido(Decimal('50.00')))
+        self.assertFalse(self.carteira2.saque_valido(Decimal('200.00')))
+
+        self.assertTrue(self.carteira2.saque_valido(Decimal('50.00'), externo=True))
+        self.assertFalse(self.carteira2.saque_valido(Decimal('5.00'), externo=True))
+
+    def test_deposito_valido_externo(self):
+        self.assertTrue(self.carteira2.deposito_valido(Decimal('25.00'), externo=True))
+        self.assertFalse(self.carteira2.deposito_valido(Decimal('10.00'), externo=True))
+
+    def test_str(self):
+        self.carteira.saldo = Decimal('100.00')
+        self.assertEqual(str(self.carteira), 'Saldo: 100.00')
+
+    def test_solicitar_cash_out(self):
+        self.carteira.depositar(Decimal('100.00'))
+        with self.assertRaises(NotImplementedError):
+            self.carteira.solicitar_cash_out(Decimal('50.00'))
+
+    def test_solicitar_cash_in(self):
+        self.carteira.depositar(Decimal('100.00'))
+        with self.assertRaises(NotImplementedError):
+            self.carteira.solicitar_cash_in(Decimal('50.00'))
 
 
 class UsuarioModelTest(TestCase):
@@ -111,11 +140,3 @@ class UsuarioModelTest(TestCase):
 
     def test_saldo(self):
         self.assertEqual(self.usuario.saldo, Decimal('100.00'))
-
-    def test_saque_valido(self):
-        self.assertTrue(self.usuario.carteira.saque_valido(Decimal('50.00')))
-        self.assertFalse(self.usuario.carteira.saque_valido(Decimal('200.00')))
-
-    def test_deposito_valido_externo(self):
-        self.assertTrue(self.usuario.carteira.deposito_valido(Decimal('25.00'), externo=True))
-        self.assertFalse(self.usuario.carteira.deposito_valido(Decimal('10.00'), externo=True))
