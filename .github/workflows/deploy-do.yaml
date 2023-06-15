@@ -22,7 +22,7 @@ jobs:
           script: |
             cd home/api_bolao/
             git pull
-            docker-compose -f docker-compose.prod.yml down api_bolao
+            docker-compose -f docker-compose.prod.yml down api_bolao --rmi all
             docker-compose -f docker-compose.prod.yml up --build -d api_bolao
             docker-compose -f docker-compose.prod.yml exec api_bolao python manage.py migrate
             docker-compose -f docker-compose.prod.yml exec api_bolao python manage.py collectstatic --noinput
