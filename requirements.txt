@@ -16,6 +16,7 @@ decorator==5.1.1
 Django==4.1.7
 django-celery-beat==2.5.0
 django-filter==23.1
+django-jazzmin==2.6.0
 django-timezone-field==5.0
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.2.2
