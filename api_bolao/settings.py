@@ -31,6 +31,7 @@ if not DEBUG:
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,7 +46,10 @@ INSTALLED_APPS = [
     # Apps
     'usuario',
     'core',
-    'bolao'
+    'bolao',
+    # 'models2puml',
+    # 'puml_generator',
+    # 'django_extensions'
 ]
 
 MIDDLEWARE = [
@@ -146,6 +150,17 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15)
 }
 
+JAZZMIN_SETTINGS = {
+    "welcome_sign": "Bem vindo ao painel de adminstração do Starbet.space",
+    "copyright": "LH Software Develop",
+    "site_logo": "favicon.ico",
+    "login_logo": "StarBet.png"
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "theme": "sandstone"
+}
+
 AUTH_USER_MODEL = 'usuario.Usuario'
 
 # Internationalization
@@ -166,6 +181,9 @@ USE_TZ = False
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfile'
 MEDIA_ROOT = BASE_DIR / "media"
+STATICFILES_DIRS = [
+    BASE_DIR / "static"
+]
 
 
 # Default primary key field type

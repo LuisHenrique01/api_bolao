@@ -1,0 +1,9 @@
+[report]
+fail_under = 100
+show_missing = True
+skip_covered = True
+[run]
+omit =
+    manage.py
+    api_bolao/settings.py
+    */tests.py
