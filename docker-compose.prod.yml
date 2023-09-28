@@ -72,7 +72,11 @@ services:
 
   certbot:
     image: certbot/certbot
+<<<<<<< HEAD
     command: sh -c "certbot certonly --webroot --webroot-path /var/www/htmml --email monitoringamazon@gmail.com --agree-tos -d starbet.space"
+=======
+    command: sh -c "certbot certonly --webroot --webroot-path /var/www/html --email monitoringamazon@gmail.com --agree-tos -d starbet.space"
+>>>>>>> 2853c50 (a)
     volumes:
       - /var/www/html:/var/www/html
     entrypoint: ""
