@@ -70,6 +70,14 @@ services:
       - celery_worker
       - celery_beat
 
+  certbot:
+    image: certbot/certbot
+    command: certonly --webroot --webroot-path /var/www/html --email monitoringamazon@gmail.com --agree-tos -d starbet.space
+    volumes:
+      - /var/www/html:/var/www/html
+    entrypoint: ""
+
+
   nginx:
     image: nginx:latest
     ports:
@@ -79,6 +87,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/html:/var/www/html
     depends_on:
       - api_bolao
 
