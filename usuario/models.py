@@ -136,9 +136,12 @@ class Carteira(BaseModel):
                                                                net_value=response['netValue'],
                                                                invoice_url=response['invoiceUrl'],
                                                                billet_url=response['bankSlipUrl'])
-                HistoricoTransacao.objects.create(id=uuid, carteira=self, valor=valor, externo=True, pix=self.pix,
-                                                  tipo=HistoricoTransacao.get_type(valor=valor, externo=True),
-                                                  asaas_infos=asaas_infos)
+                transaction = HistoricoTransacao.objects.create(id=uuid, carteira=self, valor=valor,
+                                                                externo=True, pix=self.pix,
+                                                                tipo=HistoricoTransacao.get_type(valor=valor,
+                                                                                                 externo=True),
+                                                                asaas_infos=asaas_infos)
+                return transaction
             raise UnavailableService()
         raise DepositoInvalidoException()
 

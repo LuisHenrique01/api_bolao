@@ -63,3 +63,14 @@ class Cobranca:
         }
         response = requests.post(url, headers=headers, json=payload, timeout=40)
         return response.status_code == 200, response.json()
+
+    @classmethod
+    def get_pix(cls, billet_id: str) -> Union[bool, Dict[str, Any]]:
+        url = os.getenv('URL_ASAAS') + 'payments/' + billet_id + '/pixQrCode'
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "access_token": os.getenv('ASAAS_KEY')
+        }
+        response = requests.get(url, headers=headers, timeout=40)
+        return response.status_code == 200, response.json()

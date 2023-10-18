@@ -3,7 +3,7 @@ from decimal import Decimal
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from core.communications import Email
-from core.models import HistoricoTransacao
+from core.models import HistoricoTransacao, AsaasInformations
 
 from usuario.models import Carteira, Endereco, PermissoesNotificacao, Usuario
 from core.custom_exception import UsuarioNaoEncontrado
@@ -165,6 +165,13 @@ class UsuarioNovaSenhaSerializer(serializers.Serializer):
         if not attrs.get('codigo') and not attrs.get('id'):
             raise serializers.ValidationError("Para mudar a senha você deve preencher com o seu email.")
         return super().validate(attrs)
+
+
+class AsaasInfos(serializers.ModelSerializer):
+
+    class Meta:
+        model = AsaasInformations
+        fields = ['billing_id', 'value']
 
 
 class HistoricoTransacaoSerializer(serializers.ModelSerializer):

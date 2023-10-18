@@ -2,6 +2,8 @@ from decimal import Decimal
 from uuid import uuid4
 from django.db import models
 
+from network.asaas import Cobranca
+
 from . import TIPO_CHOICES, STATUS_HISTORICO
 
 
@@ -14,6 +16,7 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+
 class AsaasInformations(BaseModel):
 
     billing_id = models.CharField("Cobrança ID", max_length=50, blank=True, null=True)
@@ -22,6 +25,16 @@ class AsaasInformations(BaseModel):
     net_value = models.DecimalField('Valor efetivo', max_digits=9, decimal_places=2)
     invoice_url = models.CharField("URL da cobrança", max_length=150, blank=True, null=True)
     billet_url = models.CharField("URL do boleto", max_length=150, blank=True, null=True)
+
+    def get_pix_infos(self) -> dict:
+        status, infos =  Cobranca.get_pix(self.billing_id)
+        if status:
+            return infos
+        return {
+            "encodedImage": None,
+            "payload": None,
+            "expirationDate": None
+        }
 
     def __str__(self) -> str:
         return self.billing_id
