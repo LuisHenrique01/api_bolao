@@ -83,7 +83,8 @@ class Carteira(BaseModel):
 
     _saldo = models.DecimalField('Saldo', name='saldo', max_digits=9, decimal_places=2, default=Decimal(0))
     bloqueado = models.BooleanField('Carteira bloqueada', default=False)
-    pix = models.CharField(max_length=50, blank=True, null=True)
+    pix = models.CharField("Pix", max_length=50, blank=True, null=True)
+    asaas_customer = models.CharField("Asaas CustomerID", max_length=50, blank=True, null=True)
 
     def saque_valido(self, valor: Decimal, externo: bool = False) -> bool:
         if self.bloqueado:
@@ -188,7 +189,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def save(self, **kwargs):
         if self._state.adding:
-            self.carteira = Carteira.objects.create()
             self.set_password(self.password)
         return super().save(**kwargs)
 

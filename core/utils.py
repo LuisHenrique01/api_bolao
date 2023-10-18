@@ -72,6 +72,10 @@ def formato_email_valido(email: str) -> bool:
     return False
 
 
+def clean_cpf(cpf: str):
+    return ''.join(filter(str.isdigit, cpf))
+
+
 def qual_tipo_chave_pix(chave_pix: str) -> str:
 
     chave_pix = chave_pix.replace(" ", "")

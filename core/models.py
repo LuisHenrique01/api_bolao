@@ -2,7 +2,7 @@ from decimal import Decimal
 from uuid import uuid4
 from django.db import models
 
-from . import TIPO_CHOICES
+from . import TIPO_CHOICES, STATUS_HISTORICO
 
 
 class BaseModel(models.Model):
@@ -14,24 +14,39 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+class AsaasInformations(BaseModel):
+
+    billing_id = models.CharField("Cobrança ID", max_length=50, blank=True, null=True)
+    due_date = models.DateField("Data de vencimento", blank=True, null=True)
+    value = models.DecimalField('Valor', max_digits=9, decimal_places=2)
+    net_value = models.DecimalField('Valor efetivo', max_digits=9, decimal_places=2)
+    invoice_url = models.CharField("Invoice URL", max_length=150, blank=True, null=True)
+    billet_url = models.CharField("Invoice URL", max_length=150, blank=True, null=True)
+    pix_qr_code = models.CharField("QR Code", max_length=150, blank=True, null=True)
+    pix_code = models.CharField("Copia e cola", max_length=150, blank=True, null=True)
+
+    def __str__(self) -> str:
+        return self.billing_id
+
 
 class HistoricoTransacao(BaseModel):
 
+    status = models.CharField('Status', max_length=10, choices=STATUS_HISTORICO.items())
     tipo = models.CharField('Tipo', max_length=10, choices=TIPO_CHOICES.items())
     valor = models.DecimalField('Valor', max_digits=9, decimal_places=2)
     carteira = models.ForeignKey('usuario.Carteira', on_delete=models.CASCADE, related_name='historico_transacao')
     externo = models.BooleanField('Transação externa', default=False)
     pix = models.CharField("PIX", max_length=50, blank=True, null=True)
+    asaas_infos = models.ForeignKey(AsaasInformations, on_delete=models.CASCADE,
+                                    related_name='historico_transacao', blank=True, null=True)
 
     @classmethod
-    def criar_registro(cls, carteira, valor: Decimal, externo: bool, pix: str = None):
+    def get_type(cls, valor: Decimal, externo: bool):
         if externo and valor > 0:
-            tipo = 'DEPOSITO'
+            return 'DEPOSITO'
         elif externo and valor < 0:
-            tipo = 'SAQUE'
+            return 'SAQUE'
         elif valor < 0:
-            tipo = 'COMPRA'
+            return 'COMPRA'
         else:
-            tipo = 'GANHO'
-        instance = cls(tipo=tipo, carteira=carteira, valor=valor, externo=externo, pix=pix)
-        instance.save()
+            return 'GANHO'
