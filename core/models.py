@@ -20,10 +20,8 @@ class AsaasInformations(BaseModel):
     due_date = models.DateField("Data de vencimento", blank=True, null=True)
     value = models.DecimalField('Valor', max_digits=9, decimal_places=2)
     net_value = models.DecimalField('Valor efetivo', max_digits=9, decimal_places=2)
-    invoice_url = models.CharField("Invoice URL", max_length=150, blank=True, null=True)
-    billet_url = models.CharField("Invoice URL", max_length=150, blank=True, null=True)
-    pix_qr_code = models.CharField("QR Code", max_length=150, blank=True, null=True)
-    pix_code = models.CharField("Copia e cola", max_length=150, blank=True, null=True)
+    invoice_url = models.CharField("URL da cobrança", max_length=150, blank=True, null=True)
+    billet_url = models.CharField("URL do boleto", max_length=150, blank=True, null=True)
 
     def __str__(self) -> str:
         return self.billing_id
@@ -31,7 +29,7 @@ class AsaasInformations(BaseModel):
 
 class HistoricoTransacao(BaseModel):
 
-    status = models.CharField('Status', max_length=10, choices=STATUS_HISTORICO.items())
+    status = models.CharField('Status', max_length=10, choices=STATUS_HISTORICO.items(), default='VALID')
     tipo = models.CharField('Tipo', max_length=10, choices=TIPO_CHOICES.items())
     valor = models.DecimalField('Valor', max_digits=9, decimal_places=2)
     carteira = models.ForeignKey('usuario.Carteira', on_delete=models.CASCADE, related_name='historico_transacao')

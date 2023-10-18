@@ -46,7 +46,8 @@ class Customer:
 class Cobranca:
 
     @classmethod
-    def gerar_cobranca(cls, customer_id: str, valor: Union[float, Decimal]) -> Union[bool, Dict[str, Any]]:
+    def gerar_cobranca(cls, customer_id: str, valor: Union[float, Decimal],
+                       transaction_id: str = None) -> Union[bool, Dict[str, Any]]:
         url = os.getenv('URL_ASAAS') + 'payments'
         headers = {
             "accept": "application/json",
@@ -57,7 +58,8 @@ class Cobranca:
             "billingType": "PIX",
             "customer": customer_id,
             "value": round(float(valor), 2),
-            "dueDate": (date.today() + relativedelta(days=1)).strftime('%Y-%m-%d')
+            "dueDate": (date.today() + relativedelta(days=1)).strftime('%Y-%m-%d'),
+            "externalReference": transaction_id
         }
         response = requests.post(url, headers=headers, json=payload, timeout=40)
-        return response.status_code, response.json()
+        return response.status_code == 200, response.json()

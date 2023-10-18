@@ -1,6 +1,7 @@
 import os
 from decimal import Decimal
 from uuid import uuid4
+from datetime import date
 from datetime import timedelta
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
@@ -8,9 +9,10 @@ from django.contrib.auth.models import PermissionsMixin
 from django.db import models, transaction
 from django.utils import timezone
 
-from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException
-from core.models import BaseModel, HistoricoTransacao
+from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException, UnavailableService
+from core.models import BaseModel, HistoricoTransacao, AsaasInformations
 from core.utils import cpf_valido, gerar_codigo
+from core.network.asaas import Cobranca
 
 from .managers import UserManager
 
@@ -106,7 +108,8 @@ class Carteira(BaseModel):
             raise SaldoInvalidoException()
         self.saldo -= valor
         self.save()
-        HistoricoTransacao.criar_registro(carteira=self, valor=-valor, externo=externo, pix=self.pix)
+        HistoricoTransacao.objects.create(carteira=self, valor=valor, externo=externo, pix=self.pix,
+                                          tipo=HistoricoTransacao.get_type(valor=valor, externo=externo))
 
     @transaction.atomic
     def depositar(self, valor: Decimal, externo: bool = False) -> None:
@@ -114,7 +117,8 @@ class Carteira(BaseModel):
             raise DepositoInvalidoException()
         self.saldo += valor
         self.save()
-        HistoricoTransacao.criar_registro(carteira=self, valor=valor, externo=externo, pix=self.pix)
+        HistoricoTransacao.objects.create(carteira=self, valor=valor, externo=externo, pix=self.pix,
+                                          tipo=HistoricoTransacao.get_type(valor=valor, externo=externo))
 
     @property
     def saldo(self):
@@ -122,7 +126,20 @@ class Carteira(BaseModel):
 
     def solicitar_cash_in(self, valor: Decimal) -> bool:
         if self.deposito_valido(valor, externo=True):
-            raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
+            uuid = uuid4()
+            status, response = Cobranca.gerar_cobranca(customer_id=self.asaas_customer, valor=valor,
+                                                       transaction_id=str(uuid))
+            if status:
+                asaas_infos = AsaasInformations.objects.create(billing_id=response['id'],
+                                                               due_date=date.fromisoformat(response['dueDate']),
+                                                               value=response['value'],
+                                                               net_value=response['netValue'],
+                                                               invoice_url=response['invoiceUrl'],
+                                                               billet_url=response['bankSlipUrl'])
+                HistoricoTransacao.objects.create(id=uuid, carteira=self, valor=valor, externo=True, pix=self.pix,
+                                                  tipo=HistoricoTransacao.get_type(valor=valor, externo=True),
+                                                  asaas_infos=asaas_infos)
+            raise UnavailableService()
         raise DepositoInvalidoException()
 
     def solicitar_cash_out(self, valor: Decimal) -> bool:

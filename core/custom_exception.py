@@ -27,3 +27,10 @@ class UsuarioNaoEncontrado(BaseException):
     def __init__(self, message="Usuário não encontrado.") -> None:
         self.message = message
         super().__init__(self.message)
+
+
+class UnavailableService(BaseException):
+
+    def __init__(self, message="Serviço indisponível no momento.") -> None:
+        self.message = message
+        super().__init__(self.message)
