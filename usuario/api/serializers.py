@@ -50,8 +50,8 @@ class CarteiraSerializer(serializers.ModelSerializer):
         return value
 
     def depositar(self, carteira: Carteira):
-        qr_code = carteira.solicitar_cash_in(self.validated_data['valor'])
-        return qr_code
+        transaction = carteira.solicitar_cash_in(self.validated_data['valor'])
+        return transaction
 
     def sacar(self, carteira: Carteira):
         qr_code = carteira.solicitar_cash_out(self.validated_data['valor'])
@@ -167,11 +167,15 @@ class UsuarioNovaSenhaSerializer(serializers.Serializer):
         return super().validate(attrs)
 
 
-class AsaasInfos(serializers.ModelSerializer):
+class AsaasInfosSerializer(serializers.ModelSerializer):
+    pix = serializers.SerializerMethodField()
 
     class Meta:
         model = AsaasInformations
-        fields = ['billing_id', 'value']
+        fields = ['billing_id', 'value', 'pix']
+
+    def get_pix(self, obj):
+        return obj.get_pix_infos()
 
 
 class HistoricoTransacaoSerializer(serializers.ModelSerializer):

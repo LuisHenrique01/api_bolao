@@ -2,10 +2,11 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.viewsets import ReadOnlyModelViewSet, ViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, ViewSet, ModelViewSet
 
 from bolao.api.serializers import (PalpiteCriarSerializer, BilheteCriarSerializer, BilheteSerializer, BolaoSerializer,
                                    CampeonatoSerializer, JogoSerializer, TimeSerializer, CriarBolaoSerializer)
+from bolao.filters import BolaoFilter
 from bolao.models import Bilhete, Campeonato, Jogo, Time, Bolao
 from core.custom_exception import SaldoInvalidoException
 from core.permissions import LEITURA_OU_AUTENTICACAO_COMPLETA
@@ -37,18 +38,20 @@ class JogoViewSet(ReadOnlyModelViewSet):
     ordering_fields = ['data', 'status']
 
 
-class BolaoViewSet(ViewSet):
+class BolaoViewSet(ModelViewSet):
 
     queryset = Bolao.objects.all()
-    filterset_fields = ['criador', 'estorno', 'taxa_banca__gte', 'taxa_banca__lte', 'taxa_criador__gte',
-                        'taxa_criador__lte', 'status']
-    search_fields = ['codigo', 'jogos__nome']
+    serializer_class = BolaoSerializer
+    filterset_class = BolaoFilter
+    search_fields = ['codigo', 'jogos__time_casa__nome', 'jogos__time_fora__nome']
     ordering_fields = ['estorno', 'taxa_banca', 'taxa_criador', 'taxa_criador', 'status', 'bilhetes_minimos']
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.queryset.filter(status=STATUS_BOLAO['ATIVO'])
-        serializer = BolaoSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        if self.action == 'list':
+            if status := self.request.GET.get('status'):
+                return self.queryset.filter(status=status)
+            return self.queryset.filter(status=STATUS_BOLAO['ATIVO'])
+        return super().get_queryset()
 
     def create(self, request):
         serializer = CriarBolaoSerializer(data={**request.data, 'criador': request.user.id})

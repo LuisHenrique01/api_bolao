@@ -1,17 +1,15 @@
-from ast import Dict
-from ctypes import Union
-from decimal import Decimal
 import os
+from typing import Union, Dict, Any
+from decimal import Decimal
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import requests
-from traitlets import Any
 
 
 class Customer:
 
     @classmethod
-    def create_custormer(cls, name: str, cpf: str, carteira_id: str, **kwargs) -> Union[bool, Dict[str, Any]]:
+    def create_customer(cls, name: str, cpf: str, carteira_id: str, **kwargs) -> Union[bool, Dict[str, Any]]:
         """Criar um cliente na Asaas."""
         url = os.getenv('URL_ASAAS') + 'customers'
         headers = {

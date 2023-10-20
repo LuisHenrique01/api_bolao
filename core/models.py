@@ -2,7 +2,7 @@ from decimal import Decimal
 from uuid import uuid4
 from django.db import models
 
-from network.asaas import Cobranca
+from core.network.asaas import Cobranca
 
 from . import TIPO_CHOICES, STATUS_HISTORICO
 
@@ -27,7 +27,7 @@ class AsaasInformations(BaseModel):
     billet_url = models.CharField("URL do boleto", max_length=150, blank=True, null=True)
 
     def get_pix_infos(self) -> dict:
-        status, infos =  Cobranca.get_pix(self.billing_id)
+        status, infos = Cobranca.get_pix(self.billing_id)
         if status:
             return infos
         return {
@@ -42,7 +42,7 @@ class AsaasInformations(BaseModel):
 
 class HistoricoTransacao(BaseModel):
 
-    status = models.CharField('Status', max_length=10, choices=STATUS_HISTORICO.items(), default='VALID')
+    status = models.CharField('Status', max_length=10, choices=STATUS_HISTORICO.items(), default='CONFIRMED')
     tipo = models.CharField('Tipo', max_length=10, choices=TIPO_CHOICES.items())
     valor = models.DecimalField('Valor', max_digits=9, decimal_places=2)
     carteira = models.ForeignKey('usuario.Carteira', on_delete=models.CASCADE, related_name='historico_transacao')
@@ -50,6 +50,10 @@ class HistoricoTransacao(BaseModel):
     pix = models.CharField("PIX", max_length=50, blank=True, null=True)
     asaas_infos = models.ForeignKey(AsaasInformations, on_delete=models.CASCADE,
                                     related_name='historico_transacao', blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Transação'
+        verbose_name_plural = 'Histórico transações'
 
     @classmethod
     def get_type(cls, valor: Decimal, externo: bool):
@@ -61,3 +65,6 @@ class HistoricoTransacao(BaseModel):
             return 'COMPRA'
         else:
             return 'GANHO'
+    
+    def __str__(self) -> str:
+        return f'{self.tipo} - {self.status} => {self.valor}'

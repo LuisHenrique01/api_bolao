@@ -11,8 +11,8 @@ from django.utils import timezone
 
 from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException, UnavailableService
 from core.models import BaseModel, HistoricoTransacao, AsaasInformations
-from core.utils import cpf_valido, gerar_codigo
-from core.network.asaas import Cobranca
+from core.utils import clean_cpf, cpf_valido, gerar_codigo
+from core.network.asaas import Cobranca, Customer
 
 from .managers import UserManager
 
@@ -103,22 +103,24 @@ class Carteira(BaseModel):
         return valor >= 0
 
     @transaction.atomic
-    def saque(self, valor: Decimal, externo: bool = False) -> None:
-        if not self.saque_valido(valor, externo=externo):
+    def saque(self, valor: Decimal, externo: bool = False, is_webhook: bool = False) -> None:
+        if not self.saque_valido(valor, externo=externo) and not is_webhook:
             raise SaldoInvalidoException()
         self.saldo -= valor
         self.save()
-        HistoricoTransacao.objects.create(carteira=self, valor=valor, externo=externo, pix=self.pix,
-                                          tipo=HistoricoTransacao.get_type(valor=valor, externo=externo))
+        if not is_webhook:
+            HistoricoTransacao.objects.create(carteira=self, valor=valor, externo=externo, pix=self.pix,
+                                              tipo=HistoricoTransacao.get_type(valor=-valor, externo=externo))
 
     @transaction.atomic
-    def depositar(self, valor: Decimal, externo: bool = False) -> None:
-        if not self.deposito_valido(valor, externo=externo):
+    def depositar(self, valor: Decimal, externo: bool = False, is_webhook: bool = False) -> None:
+        if not self.deposito_valido(valor, externo=externo) and not is_webhook:
             raise DepositoInvalidoException()
         self.saldo += valor
         self.save()
-        HistoricoTransacao.objects.create(carteira=self, valor=valor, externo=externo, pix=self.pix,
-                                          tipo=HistoricoTransacao.get_type(valor=valor, externo=externo))
+        if not is_webhook:
+            HistoricoTransacao.objects.create(carteira=self, valor=valor, externo=externo, pix=self.pix,
+                                              tipo=HistoricoTransacao.get_type(valor=valor, externo=externo))
 
     @property
     def saldo(self):
@@ -137,7 +139,7 @@ class Carteira(BaseModel):
                                                                invoice_url=response['invoiceUrl'],
                                                                billet_url=response['bankSlipUrl'])
                 transaction = HistoricoTransacao.objects.create(id=uuid, carteira=self, valor=valor,
-                                                                externo=True, pix=self.pix,
+                                                                externo=True, pix=self.pix, status='PENDING',
                                                                 tipo=HistoricoTransacao.get_type(valor=valor,
                                                                                                  externo=True),
                                                                 asaas_infos=asaas_infos)
@@ -209,6 +211,12 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def save(self, **kwargs):
         if self._state.adding:
+            self.carteira = Carteira.objects.create()
+            status, customer = Customer.create_customer(self.nome, clean_cpf(self.cpf),
+                                                        str(self.carteira.id))
+            if status:
+                self.carteira.asaas_customer = customer["id"]
+                self.carteira.save()
             self.set_password(self.password)
         return super().save(**kwargs)
 
