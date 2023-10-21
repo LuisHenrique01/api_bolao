@@ -72,3 +72,14 @@ class Cobranca:
         }
         response = requests.get(url, headers=headers, timeout=40)
         return response.status_code == 200, response.json()
+
+    @classmethod
+    def delete_cobranca(cls, payment_id: str) -> bool:
+        url = os.getenv('URL_ASAAS') + 'payments/' + payment_id
+        headers = {
+            "accept": "application/json",
+            "access_token": os.getenv('ASAAS_KEY')
+        }
+
+        response = requests.delete(url, headers=headers)
+        return response.status_code == 200

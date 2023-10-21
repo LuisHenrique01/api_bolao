@@ -6,7 +6,7 @@ TIPO_CHOICES = {
 }
 
 STATUS_HISTORICO = {
-    'REMOVED': 'Removido',
-    'PENDING': 'Pendente',
-    'CONFIRMED': 'Confirmado'
+    'REMOVED': 'REMOVED',
+    'PENDING': 'PENDING',
+    'CONFIRMED': 'CONFIRMED'
 }

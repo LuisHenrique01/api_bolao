@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
+from core import STATUS_HISTORICO
 from core.permissions import CARTEIRA_PERMISSIONS
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import PermissionDenied
@@ -160,9 +161,9 @@ class CarteiraViewSet(ViewSet):
         except NotImplementedError as e:
             return Response({'message': str(e)}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
-from django_filters.rest_framework import DjangoFilterBackend
+
 class HistoricoTransfereciaViewSet(ReadOnlyModelViewSet):
-    queryset = HistoricoTransacao.objects.all()
+    queryset = HistoricoTransacao.objects.filter(status=STATUS_HISTORICO['CONFIRMED'])
     serializer_class = HistoricoTransacaoSerializer
 
     def get_queryset(self):

@@ -7,6 +7,7 @@ from rest_framework.viewsets import ReadOnlyModelViewSet, ViewSet, ModelViewSet
 from bolao.api.serializers import (PalpiteCriarSerializer, BilheteCriarSerializer, BilheteSerializer, BolaoSerializer,
                                    CampeonatoSerializer, JogoSerializer, TimeSerializer, CriarBolaoSerializer)
 from bolao.filters import BolaoFilter
+from bolao.mixins import ListCreateDetailOnlyMixin
 from bolao.models import Bilhete, Campeonato, Jogo, Time, Bolao
 from core.custom_exception import SaldoInvalidoException
 from core.permissions import LEITURA_OU_AUTENTICACAO_COMPLETA
@@ -89,14 +90,13 @@ class BolaoViewSet(ModelViewSet):
         return Response({'message': 'O usuário atual não pode pausar o bolão.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class BilheteViewSet(ViewSet):
+class BilheteViewSet(ListCreateDetailOnlyMixin, ModelViewSet):
 
     queryset = Bilhete.objects.all()
+    serializer_class = BilheteSerializer
 
-    def list(self, request):
-        queryset = self.queryset.filter(usuario=request.user)
-        serializer = BilheteSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return self.queryset.filter(usuario=self.request.user)
 
     def create(self, request):
         try:
