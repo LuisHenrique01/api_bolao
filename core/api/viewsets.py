@@ -54,7 +54,8 @@ class PaymentsWebhook(APIView):
         return status.HTTP_200_OK
 
     def post(self, request, *args, **kwargs):
+        default_function = lambda: status.HTTP_200_OK
         event = request.data['event']
-        handler = getattr(self, event.lower())
+        handler = getattr(self, event.lower(), default_function)
         _status = handler()
         return Response(status=_status)
