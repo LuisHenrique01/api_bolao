@@ -4,6 +4,7 @@ from decimal import Decimal
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import requests
+from core.utils import clean_cpf
 
 
 class Customer:
@@ -37,7 +38,7 @@ class Customer:
             "access_token": os.getenv('ASAAS_KEY')
         }
 
-        response = requests.delete(url, headers=headers)
+        response = requests.delete(url, headers=headers, timeout=40)
         return response.status_code == 200
 
 
@@ -81,5 +82,44 @@ class Cobranca:
             "access_token": os.getenv('ASAAS_KEY')
         }
 
-        response = requests.delete(url, headers=headers)
+        response = requests.delete(url, headers=headers, timeout=40)
         return response.status_code == 200
+
+
+class Transferencia:
+
+    @classmethod
+    def enviar_pix(cls, valor: Decimal, usuario, banco_code: str, agencia: str,
+                   tipo_conta: str, numero_conta: str, digito_conta: str):
+        url = os.getenv('URL_ASAAS') + 'transfers'
+        payload = {
+            "bankAccount": {
+                "bank": {"code": banco_code},
+                "ownerBirthDate": usuario.data_nascimento.strftime('%Y-%m-%d'),
+                "ownerName": usuario.nome,
+                "agency": agencia,
+                "bankAccountType": tipo_conta,
+                "cpfCnpj": clean_cpf(usuario.cpf),
+                "accountDigit": digito_conta,
+                "account": numero_conta
+            },
+            "operationType": "PIX",
+            "value": round(float(valor), 2)
+            }
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "access_token": os.getenv('ASAAS_KEY')
+        }
+        response = requests.post(url=url, headers=headers, json=payload, timeout=40)
+        return response.status_code == 200, response.json()
+
+    @classmethod
+    def buscar_tranferencia(cls, transferencia_id: str):
+        url = os.getenv('URL_ASAAS') + "transfers/" + transferencia_id
+        headers = {
+            "accept": "application/json",
+            "access_token": os.getenv('ASAAS_KEY')
+        }
+        response = requests.get(url, headers=headers)
+        return response.status_code == 200, response.json()

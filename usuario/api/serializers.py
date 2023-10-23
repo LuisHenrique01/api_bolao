@@ -5,9 +5,9 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from core.communications import Email
 from core.models import HistoricoTransacao, AsaasInformations
 
-from usuario.models import Carteira, Endereco, PermissoesNotificacao, Usuario
+from usuario.models import Carteira, Endereco, PermissoesNotificacao, Usuario, ContaExternaUsuario
 from core.custom_exception import UsuarioNaoEncontrado
-from core.utils import qual_tipo_chave_pix
+from core import TIPO_CONTA
 
 
 class EnderecoSerializer(serializers.ModelSerializer):
@@ -24,10 +24,23 @@ class PermissoesSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ContaExternaUsuarioSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ContaExternaUsuario
+        fields = ['code_banco', 'agencia', 'tipo_conta', 'num_conta', 'digito']
+
+    # def validate_tipo_conta(self, attrs):
+    #     print(attrs)
+    #     if attrs in TIPO_CONTA:
+    #         return attrs
+    #     raise serializers.ValidationError('Tipo de conta inválido.')
+
+
 class CarteiraSerializer(serializers.ModelSerializer):
 
     valor = serializers.DecimalField(max_digits=9, decimal_places=2, required=False)
-    pix = serializers.CharField(required=False)
+    conta = ContaExternaUsuarioSerializer(required=False)
 
     class Meta:
         model = Carteira
@@ -35,7 +48,7 @@ class CarteiraSerializer(serializers.ModelSerializer):
         read_only_fields = ['saldo', 'bloqueado']
 
     def validate_valor(self, value):
-        if 'pix' in self.initial_data:
+        if 'conta' in self.initial_data:
             valor_minimo = Decimal(os.getenv('MIN_SAQUE'))
         else:
             valor_minimo = Decimal(os.getenv('MIN_DEPOSITO'))
@@ -43,19 +56,13 @@ class CarteiraSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Valor abaixo do permitido.')
         return value
 
-    def validate_pix(self, value):
-        PIX_ACEITOS = ("e-mail", "CPF", "telefone", "aleatorio")
-        if qual_tipo_chave_pix(value) not in PIX_ACEITOS:
-            raise serializers.ValidationError(f'Chave PIX inválida, acitamos apenas as seguintes chaves {PIX_ACEITOS}!')
-        return value
-
     def depositar(self, carteira: Carteira):
         transaction = carteira.solicitar_cash_in(self.validated_data['valor'])
         return transaction
 
     def sacar(self, carteira: Carteira):
-        qr_code = carteira.solicitar_cash_out(self.validated_data['valor'])
-        return qr_code
+        return carteira.solicitar_cash_out(self.validated_data['valor'],
+                                           self.validated_data['conta'])
 
 
 class CriarUsuarioSerializer(serializers.ModelSerializer):

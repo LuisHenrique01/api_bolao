@@ -8,11 +8,12 @@ from django.contrib.auth.models import PermissionsMixin
 
 from django.db import models, transaction
 from django.utils import timezone
+from core import TIPO_CONTA, STATUS_HISTORICO
 
 from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException, UnavailableService
 from core.models import BaseModel, HistoricoTransacao, AsaasInformations
 from core.utils import clean_cpf, cpf_valido, gerar_codigo
-from core.network.asaas import Cobranca, Customer
+from core.network.asaas import Cobranca, Customer, Transferencia
 
 from .managers import UserManager
 
@@ -81,11 +82,28 @@ class Endereco(BaseModel):
         return f'CEP: {self.cep}|Cidade: {self.cidade}'
 
 
+class ContaExternaUsuario(BaseModel):
+
+    carteira = models.ForeignKey('usuario.Carteira', verbose_name="Carteira", on_delete=models.CASCADE,
+                                 related_name='conta_externa')
+    code_banco = models.CharField("Código bancario", max_length=5)
+    agencia = models.CharField("Agencia", max_length=5)
+    tipo_conta = models.CharField("Tipo de conta", max_length=20, choices=TIPO_CONTA.items())
+    num_conta = models.CharField("Conta", max_length=15)
+    digito = models.CharField("Digito", max_length=5)
+
+    class Meta:
+        verbose_name = 'Conta externa'
+        verbose_name_plural = 'Contas externa'
+
+    def __str__(self) -> str:
+        return f'{self.code_banco} - {self.num_conta}'
+
+
 class Carteira(BaseModel):
 
     _saldo = models.DecimalField('Saldo', name='saldo', max_digits=9, decimal_places=2, default=Decimal(0))
     bloqueado = models.BooleanField('Carteira bloqueada', default=False)
-    pix = models.CharField("Pix", max_length=50, blank=True, null=True)
     asaas_customer = models.CharField("Asaas CustomerID", max_length=50, blank=True, null=True)
 
     def saque_valido(self, valor: Decimal, externo: bool = False) -> bool:
@@ -103,13 +121,13 @@ class Carteira(BaseModel):
         return valor >= 0
 
     @transaction.atomic
-    def saque(self, valor: Decimal, externo: bool = False, is_webhook: bool = False) -> None:
-        if not self.saque_valido(valor, externo=externo) and not is_webhook:
+    def saque(self, valor: Decimal, externo: bool = False, salvar_historico: bool = True) -> None:
+        if not self.saque_valido(valor, externo=externo) and salvar_historico:
             raise SaldoInvalidoException()
         self.saldo -= valor
         self.save()
-        if not is_webhook:
-            HistoricoTransacao.objects.create(carteira=self, valor=valor, externo=externo, pix=self.pix,
+        if salvar_historico:
+            HistoricoTransacao.objects.create(carteira=self, valor=valor, externo=externo,
                                               tipo=HistoricoTransacao.get_type(valor=-valor, externo=externo))
 
     @transaction.atomic
@@ -119,14 +137,14 @@ class Carteira(BaseModel):
         self.saldo += valor
         self.save()
         if not is_webhook:
-            HistoricoTransacao.objects.create(carteira=self, valor=valor, externo=externo, pix=self.pix,
+            HistoricoTransacao.objects.create(carteira=self, valor=valor, externo=externo,
                                               tipo=HistoricoTransacao.get_type(valor=valor, externo=externo))
 
     @property
     def saldo(self):
         return self.saldo
 
-    def solicitar_cash_in(self, valor: Decimal) -> bool:
+    def solicitar_cash_in(self, valor: Decimal) -> HistoricoTransacao:
         if self.deposito_valido(valor, externo=True):
             uuid = uuid4()
             status, response = Cobranca.gerar_cobranca(customer_id=self.asaas_customer, valor=valor,
@@ -139,7 +157,7 @@ class Carteira(BaseModel):
                                                                invoice_url=response['invoiceUrl'],
                                                                billet_url=response['bankSlipUrl'])
                 transaction = HistoricoTransacao.objects.create(id=uuid, carteira=self, valor=valor,
-                                                                externo=True, pix=self.pix, status='PENDING',
+                                                                externo=True, status='PENDING',
                                                                 tipo=HistoricoTransacao.get_type(valor=valor,
                                                                                                  externo=True),
                                                                 asaas_infos=asaas_infos)
@@ -147,9 +165,23 @@ class Carteira(BaseModel):
             raise UnavailableService()
         raise DepositoInvalidoException()
 
-    def solicitar_cash_out(self, valor: Decimal) -> bool:
+    def solicitar_cash_out(self, valor: Decimal, conta: dict) -> bool:
         if self.saque_valido(valor, externo=True):
-            raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
+            status, response = Transferencia.enviar_pix(valor=valor, banco_code=conta['code_banco'],
+                                                        agencia=conta['agencia'], numero_conta=conta['num_conta'],
+                                                        digito_conta=conta['digito'], tipo_conta=conta['tipo_conta'],
+                                                        usuario=self.usuario)
+            if status:
+                self.saque(valor=valor, externo=True, salvar_historico=False)
+                obj_conta, _ = ContaExternaUsuario.objects.get_or_create(**conta, defaults={'carteira': self})
+                asaas_infos = AsaasInformations.objects.create(asaas_id=response['id'], op_type=response['object'],
+                                                               value=response['value'], net_value=response['netValue'])
+                HistoricoTransacao.objects.create(carteira=self,valor=-valor, externo=True, conta=obj_conta,
+                                                  tipo=HistoricoTransacao.get_type(valor=-valor, externo=True),
+                                                  status=STATUS_HISTORICO['PENDING'],
+                                                  asaas_infos=asaas_infos)
+                return True
+            return UnavailableService()
         raise SaldoInvalidoException()
 
     def __str__(self):

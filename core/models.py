@@ -19,7 +19,8 @@ class BaseModel(models.Model):
 
 class AsaasInformations(BaseModel):
 
-    billing_id = models.CharField("Cobrança ID", max_length=50, blank=True, null=True)
+    asaas_id = models.CharField("ID Asaas", max_length=50)
+    op_type = models.CharField("Tipo da operação", max_length=50, default="payment")
     due_date = models.DateField("Data de vencimento", blank=True, null=True)
     value = models.DecimalField('Valor', max_digits=9, decimal_places=2)
     net_value = models.DecimalField('Valor efetivo', max_digits=9, decimal_places=2)
@@ -27,7 +28,7 @@ class AsaasInformations(BaseModel):
     billet_url = models.CharField("URL do boleto", max_length=150, blank=True, null=True)
 
     def get_pix_infos(self) -> dict:
-        status, infos = Cobranca.get_pix(self.billing_id)
+        status, infos = Cobranca.get_pix(self.asaas_id)
         if status:
             return infos
         return {
@@ -37,7 +38,7 @@ class AsaasInformations(BaseModel):
         }
 
     def __str__(self) -> str:
-        return self.billing_id
+        return self.asaas_id
 
 
 class HistoricoTransacao(BaseModel):
@@ -47,7 +48,8 @@ class HistoricoTransacao(BaseModel):
     valor = models.DecimalField('Valor', max_digits=9, decimal_places=2)
     carteira = models.ForeignKey('usuario.Carteira', on_delete=models.CASCADE, related_name='historico_transacao')
     externo = models.BooleanField('Transação externa', default=False)
-    pix = models.CharField("PIX", max_length=50, blank=True, null=True)
+    conta = models.ForeignKey('usuario.ContaExternaUsuario', on_delete=models.CASCADE,
+                              related_name='historico_transacao', blank=True, null=True)
     asaas_infos = models.ForeignKey(AsaasInformations, on_delete=models.CASCADE,
                                     related_name='historico_transacao', blank=True, null=True)
 

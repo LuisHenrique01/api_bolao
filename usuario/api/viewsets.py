@@ -158,6 +158,8 @@ class CarteiraViewSet(ViewSet):
             return Response(qr_code, status=status.HTTP_200_OK)
         except SaldoInvalidoException as e:
             return Response(e.serializer, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except UnavailableService as e:
+            return Response(e.serializer, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         except NotImplementedError as e:
             return Response({'message': str(e)}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
