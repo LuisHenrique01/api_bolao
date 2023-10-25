@@ -30,12 +30,6 @@ class ContaExternaUsuarioSerializer(serializers.ModelSerializer):
         model = ContaExternaUsuario
         fields = ['code_banco', 'agencia', 'tipo_conta', 'num_conta', 'digito']
 
-    # def validate_tipo_conta(self, attrs):
-    #     print(attrs)
-    #     if attrs in TIPO_CONTA:
-    #         return attrs
-    #     raise serializers.ValidationError('Tipo de conta inválido.')
-
 
 class CarteiraSerializer(serializers.ModelSerializer):
 
@@ -179,7 +173,7 @@ class AsaasInfosSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AsaasInformations
-        fields = ['billing_id', 'value', 'pix']
+        fields = ['asaas_id', 'value', 'pix']
 
     def get_pix(self, obj):
         return obj.get_pix_infos()

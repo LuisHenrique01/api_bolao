@@ -22,15 +22,15 @@ class Email:
         sender.content_subtype = "html"
         sender.send(fail_silently=False)
 
-    def validar_usuario(cls, email: str, codigo: str):
-        titulo = "Código para validar sua conta"
-        mensagem = "Siga as instruções da plataforma para validar sua conta."
+    @classmethod
+    def validar_usuario(cls, email: str, codigo: str, username: str = None):
+        titulo = "Validação da Conta Starbet.space"
         expiracao = datetime.now() + timedelta(hours=2)
         expiracao_str = expiracao.strftime('%H:%M')
         sender = EmailMessage(
             subject=titulo,
-            body=render_to_string('email/validacao.html', {'titulo': titulo, 'codigo': codigo,
-                                                           'mensagem': mensagem, 'expiracao': expiracao_str}),
+            body=render_to_string('email/validacao-index.html', {'codigo': codigo, 'expiracao': expiracao_str,
+                                                           'username': username or 'usuário'}),
             from_email=os.getenv('EMAIL'),
             to=[email],
         )

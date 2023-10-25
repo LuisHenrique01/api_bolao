@@ -150,7 +150,7 @@ class Carteira(BaseModel):
             status, response = Cobranca.gerar_cobranca(customer_id=self.asaas_customer, valor=valor,
                                                        transaction_id=str(uuid))
             if status:
-                asaas_infos = AsaasInformations.objects.create(billing_id=response['id'],
+                asaas_infos = AsaasInformations.objects.create(asaas_id=response['id'],
                                                                due_date=date.fromisoformat(response['dueDate']),
                                                                value=response['value'],
                                                                net_value=response['netValue'],

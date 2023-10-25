@@ -6,13 +6,14 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from core import STATUS_HISTORICO
+from core.mixins import WebhookActionMixin
 
 from usuario.models import Carteira
 from core.models import HistoricoTransacao
 from core.network.asaas import Cobranca
 
 
-class PaymentsWebhook(APIView):
+class PaymentsWebhook(WebhookActionMixin, APIView):
     permission_classes = [AllowAny, ]
 
     def payment_received(self):
@@ -21,7 +22,7 @@ class PaymentsWebhook(APIView):
                 id=self.request.data['payment']['externalReference'])
         except ObjectDoesNotExist:
             transacao = HistoricoTransacao.objects.select_related('carteira', 'asaas_infos').get(
-                asaas_infos__billing_id=self.request.data['payment']['id'])
+                asaas_infos__asaas_id=self.request.data['payment']['id'])
         if transacao.status == STATUS_HISTORICO['PENDING']:
             transacao.carteira.depositar(valor=Decimal(self.request.data['payment']['value']),
                                          externo=True, is_webhook=True)
@@ -45,7 +46,7 @@ class PaymentsWebhook(APIView):
                 id=self.request.data['payment']['externalReference'])
         except ObjectDoesNotExist:
             transacao = HistoricoTransacao.objects.select_related('carteira', 'asaas_infos').get(
-                asaas_infos__billing_id=self.request.data['payment']['id'])
+                asaas_infos__asaas_id=self.request.data['payment']['id'])
         if transacao.status == STATUS_HISTORICO['PENDING']:
             _status = Cobranca.delete_cobranca(self.request.data['payment']['id'])
             if _status:
@@ -53,20 +54,31 @@ class PaymentsWebhook(APIView):
                 transacao.save()
         return status.HTTP_200_OK
 
-    def post(self, request, *args, **kwargs):
-        default_function = lambda: status.HTTP_200_OK
-        event = request.data['event']
-        handler = getattr(self, event.lower(), default_function)
-        _status = handler()
-        return Response(status=_status)
 
-
-class TransfersWebhook(APIView):
+class TransfersWebhook(WebhookActionMixin, APIView):
     permission_classes = [AllowAny, ]
 
-    def post(self, request, *args, **kwargs):
-        default_function = lambda: status.HTTP_200_OK
-        event = request.data['event']
-        handler = getattr(self, event.lower(), default_function)
-        _status = handler()
-        return Response(status=_status)
+    def transfer_failed(self):
+        try:
+            transacao = HistoricoTransacao.objects.select_related('carteira').get(
+                asaas_infos__asaas_id=self.request.data['transfer']['id']
+            )
+        except ObjectDoesNotExist:
+            return status.HTTP_200_OK
+        transacao.carteira.depositar(valor=self.request.data['transfer']['value'],
+                                     externo=True, is_webhook=True)
+        transacao.status = STATUS_HISTORICO['FAILED']
+        transacao.save()
+        return status.HTTP_200_OK
+
+    def transfer_done(self):
+        try:
+            transacao = HistoricoTransacao.objects.select_related('carteira').get(
+                asaas_infos__asaas_id=self.request.data['transfer']['id']
+            )
+        except ObjectDoesNotExist:
+            return status.HTTP_200_OK
+        transacao.status = STATUS_HISTORICO['CONFIRMED']
+        transacao.save()
+        return status.HTTP_200_OK
+
