@@ -93,7 +93,7 @@ class UsuarioNotificacaoSerializer(serializers.Serializer):
             if email:
                 usuario = Usuario.objects.get(email=email)
                 codigo = usuario.permissoes.criar_codigo('email')
-                Email.recuperar_senha(usuario.email, codigo.codigo)
+                Email.recuperar_senha(usuario.email, codigo.codigo, usuario.nome_formatado)
             if sms:
                 raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
         except ObjectDoesNotExist:
@@ -106,7 +106,7 @@ class UsuarioNotificacaoSerializer(serializers.Serializer):
             if email:
                 usuario = Usuario.objects.get(email=email)
                 codigo = usuario.permissoes.criar_codigo('email')
-                Email.validar_usuario(usuario.email, codigo.codigo)
+                Email.validar_usuario(usuario.email, codigo.codigo, usuario.nome_formatado)
             if sms:
                 raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
         except ObjectDoesNotExist:
