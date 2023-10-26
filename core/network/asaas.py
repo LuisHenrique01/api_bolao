@@ -103,7 +103,7 @@ class Transferencia:
                 "accountDigit": digito_conta,
                 "account": numero_conta
             },
-            "operationType": "PIX",
+            "operationType": "TED",
             "value": round(float(valor), 2)
             }
         headers = {
