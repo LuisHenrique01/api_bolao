@@ -17,5 +17,6 @@ urlpatterns = [
     path('api/v1/usuario/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/usuario/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/v1/usuario/', include(usuarioRouters.urls)),
-    path('api/v1/bolao/', include(bolaoRouters.urls))
+    path('api/v1/bolao/', include(bolaoRouters.urls)),
+    path('api/v1/core/', include('core.urls'))
 ]

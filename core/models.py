@@ -2,7 +2,9 @@ from decimal import Decimal
 from uuid import uuid4
 from django.db import models
 
-from . import TIPO_CHOICES
+from core.network.asaas import Cobranca
+
+from . import TIPO_CHOICES, STATUS_HISTORICO
 
 
 class BaseModel(models.Model):
@@ -15,23 +17,56 @@ class BaseModel(models.Model):
         abstract = True
 
 
+class AsaasInformations(BaseModel):
+
+    asaas_id = models.CharField("ID Asaas", max_length=50)
+    op_type = models.CharField("Tipo da operação", max_length=50, default="payment")
+    due_date = models.DateField("Data de vencimento", blank=True, null=True)
+    value = models.DecimalField('Valor', max_digits=9, decimal_places=2)
+    net_value = models.DecimalField('Valor efetivo', max_digits=9, decimal_places=2)
+    invoice_url = models.CharField("URL da cobrança", max_length=150, blank=True, null=True)
+    billet_url = models.CharField("URL do boleto", max_length=150, blank=True, null=True)
+
+    def get_pix_infos(self) -> dict:
+        status, infos = Cobranca.get_pix(self.asaas_id)
+        if status:
+            return infos
+        return {
+            "encodedImage": None,
+            "payload": None,
+            "expirationDate": None
+        }
+
+    def __str__(self) -> str:
+        return self.asaas_id
+
+
 class HistoricoTransacao(BaseModel):
 
+    status = models.CharField('Status', max_length=10, choices=STATUS_HISTORICO.items(), default='CONFIRMED')
     tipo = models.CharField('Tipo', max_length=10, choices=TIPO_CHOICES.items())
     valor = models.DecimalField('Valor', max_digits=9, decimal_places=2)
     carteira = models.ForeignKey('usuario.Carteira', on_delete=models.CASCADE, related_name='historico_transacao')
     externo = models.BooleanField('Transação externa', default=False)
-    pix = models.CharField("PIX", max_length=50, blank=True, null=True)
+    conta = models.ForeignKey('usuario.ContaExternaUsuario', on_delete=models.CASCADE,
+                              related_name='historico_transacao', blank=True, null=True)
+    asaas_infos = models.ForeignKey(AsaasInformations, on_delete=models.CASCADE,
+                                    related_name='historico_transacao', blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Transação'
+        verbose_name_plural = 'Histórico transações'
 
     @classmethod
-    def criar_registro(cls, carteira, valor: Decimal, externo: bool, pix: str = None):
+    def get_type(cls, valor: Decimal, externo: bool):
         if externo and valor > 0:
-            tipo = 'DEPOSITO'
+            return 'DEPOSITO'
         elif externo and valor < 0:
-            tipo = 'SAQUE'
+            return 'SAQUE'
         elif valor < 0:
-            tipo = 'COMPRA'
+            return 'COMPRA'
         else:
-            tipo = 'GANHO'
-        instance = cls(tipo=tipo, carteira=carteira, valor=valor, externo=externo, pix=pix)
-        instance.save()
+            return 'GANHO'
+
+    def __str__(self) -> str:
+        return f'{self.tipo} - {self.status} => {self.valor}'
