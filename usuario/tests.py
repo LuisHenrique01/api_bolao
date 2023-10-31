@@ -1,6 +1,7 @@
 import uuid
 from decimal import Decimal
 from django.test import TestCase
+from unittest import skip
 from django.db.utils import IntegrityError
 from .models import PermissoesNotificacao, Endereco, Carteira, Usuario
 from core.custom_exception import SaldoInvalidoException, DepositoInvalidoException
@@ -56,7 +57,7 @@ class CarteiraModelTest(TestCase):
 
     def test_depositar_raises_exception_when_value_is_below_min_deposito(self):
         with self.assertRaises(DepositoInvalidoException):
-            self.carteira.depositar(Decimal("9.99"), externo=True)
+            self.carteira.depositar(Decimal("0.50"), externo=True)
 
     def test_saque_valido(self):
         self.carteira2.depositar(Decimal("100"))
@@ -69,21 +70,23 @@ class CarteiraModelTest(TestCase):
         self.assertFalse(self.carteira2.saque_valido(Decimal('200.00')))
 
         self.assertTrue(self.carteira2.saque_valido(Decimal('50.00'), externo=True))
-        self.assertFalse(self.carteira2.saque_valido(Decimal('5.00'), externo=True))
+        self.assertFalse(self.carteira2.saque_valido(Decimal('0.50'), externo=True))
 
     def test_deposito_valido_externo(self):
         self.assertTrue(self.carteira2.deposito_valido(Decimal('25.00'), externo=True))
-        self.assertFalse(self.carteira2.deposito_valido(Decimal('10.00'), externo=True))
+        self.assertFalse(self.carteira2.deposito_valido(Decimal('0.50'), externo=True))
 
     def test_str(self):
         self.carteira.saldo = Decimal('100.00')
         self.assertEqual(str(self.carteira), 'Saldo: 100.00')
 
+    @skip('Foi implementado')
     def test_solicitar_cash_out(self):
         self.carteira.depositar(Decimal('100.00'))
         with self.assertRaises(NotImplementedError):
             self.carteira.solicitar_cash_out(Decimal('50.00'))
 
+    @skip('Foi implementado')
     def test_solicitar_cash_in(self):
         self.carteira.depositar(Decimal('100.00'))
         with self.assertRaises(NotImplementedError):

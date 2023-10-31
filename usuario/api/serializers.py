@@ -3,11 +3,10 @@ from decimal import Decimal
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from core.communications import Email
-from core.models import HistoricoTransacao
+from core.models import HistoricoTransacao, AsaasInformations
 
-from usuario.models import Carteira, Endereco, PermissoesNotificacao, Usuario
+from usuario.models import Carteira, Endereco, PermissoesNotificacao, Usuario, ContaExternaUsuario
 from core.custom_exception import UsuarioNaoEncontrado
-from core.utils import qual_tipo_chave_pix
 
 
 class EnderecoSerializer(serializers.ModelSerializer):
@@ -24,10 +23,17 @@ class PermissoesSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ContaExternaUsuarioSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ContaExternaUsuario
+        fields = ['code_banco', 'agencia', 'tipo_conta', 'num_conta', 'digito']
+
+
 class CarteiraSerializer(serializers.ModelSerializer):
 
     valor = serializers.DecimalField(max_digits=9, decimal_places=2, required=False)
-    pix = serializers.CharField(required=False)
+    conta = ContaExternaUsuarioSerializer(required=False)
 
     class Meta:
         model = Carteira
@@ -35,7 +41,7 @@ class CarteiraSerializer(serializers.ModelSerializer):
         read_only_fields = ['saldo', 'bloqueado']
 
     def validate_valor(self, value):
-        if 'pix' in self.initial_data:
+        if 'conta' in self.initial_data:
             valor_minimo = Decimal(os.getenv('MIN_SAQUE'))
         else:
             valor_minimo = Decimal(os.getenv('MIN_DEPOSITO'))
@@ -43,19 +49,13 @@ class CarteiraSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Valor abaixo do permitido.')
         return value
 
-    def validate_pix(self, value):
-        PIX_ACEITOS = ("e-mail", "CPF", "telefone", "aleatorio")
-        if qual_tipo_chave_pix(value) not in PIX_ACEITOS:
-            raise serializers.ValidationError(f'Chave PIX inválida, acitamos apenas as seguintes chaves {PIX_ACEITOS}!')
-        return value
-
     def depositar(self, carteira: Carteira):
-        qr_code = carteira.solicitar_cash_in(self.validated_data['valor'])
-        return qr_code
+        transaction = carteira.solicitar_cash_in(self.validated_data['valor'])
+        return transaction
 
     def sacar(self, carteira: Carteira):
-        qr_code = carteira.solicitar_cash_out(self.validated_data['valor'])
-        return qr_code
+        return carteira.solicitar_cash_out(self.validated_data['valor'],
+                                           self.validated_data['conta'])
 
 
 class CriarUsuarioSerializer(serializers.ModelSerializer):
@@ -92,7 +92,7 @@ class UsuarioNotificacaoSerializer(serializers.Serializer):
             if email:
                 usuario = Usuario.objects.get(email=email)
                 codigo = usuario.permissoes.criar_codigo('email')
-                Email.recuperar_senha(usuario.email, codigo.codigo)
+                Email.recuperar_senha(usuario.email, codigo.codigo, usuario.nome_formatado)
             if sms:
                 raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
         except ObjectDoesNotExist:
@@ -105,7 +105,7 @@ class UsuarioNotificacaoSerializer(serializers.Serializer):
             if email:
                 usuario = Usuario.objects.get(email=email)
                 codigo = usuario.permissoes.criar_codigo('email')
-                Email.validar_usuario(usuario.email, codigo.codigo)
+                Email.validar_usuario(usuario.email, codigo.codigo, usuario.nome_formatado)
             if sms:
                 raise NotImplementedError('Ainda não estamos disponibilizando esse serviço.')
         except ObjectDoesNotExist:
@@ -165,6 +165,17 @@ class UsuarioNovaSenhaSerializer(serializers.Serializer):
         if not attrs.get('codigo') and not attrs.get('id'):
             raise serializers.ValidationError("Para mudar a senha você deve preencher com o seu email.")
         return super().validate(attrs)
+
+
+class AsaasInfosSerializer(serializers.ModelSerializer):
+    pix = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AsaasInformations
+        fields = ['asaas_id', 'value', 'pix']
+
+    def get_pix(self, obj):
+        return obj.get_pix_infos()
 
 
 class HistoricoTransacaoSerializer(serializers.ModelSerializer):
