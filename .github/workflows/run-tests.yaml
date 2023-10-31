@@ -14,6 +14,7 @@ env:
   DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
   KEY_FOOTBALL_API_IO: ${{ secrets.KEY_FOOTBALL_API_IO }}
   KEY_FOOTBALL_API_RAPID: ${{ secrets.KEY_FOOTBALL_API_RAPID }}
+  ASAAS_KEY: ${{ secrets.ASAAS_KEY }}
   MAX_PALPITE: ${{ vars.MAX_PALPITE }}
   MIN_SAQUE: ${{ vars.MIN_SAQUE }}
   MIN_DEPOSITO: ${{ vars.MIN_DEPOSITO }}
@@ -23,6 +24,7 @@ env:
   MIN_TAXA_CRIADOR: ${{ vars.MIN_TAXA_CRIADOR }}
   MIN_PALPITE: ${{ vars.MIN_PALPITE }}
   DEBUG: ${{ vars.DEBUG }}
+  URL_ASAAS: ${{ vars.URL_ASAAS }}
 
 jobs:
   flake8:
