@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.viewsets import ReadOnlyModelViewSet, ViewSet, ModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
 from bolao.api.serializers import (PalpiteCriarSerializer, BilheteCriarSerializer, BilheteSerializer, BolaoSerializer,
                                    CampeonatoSerializer, JogoSerializer, TimeSerializer, CriarBolaoSerializer)

@@ -7,7 +7,6 @@ from core.models import HistoricoTransacao, AsaasInformations
 
 from usuario.models import Carteira, Endereco, PermissoesNotificacao, Usuario, ContaExternaUsuario
 from core.custom_exception import UsuarioNaoEncontrado
-from core import TIPO_CONTA
 
 
 class EnderecoSerializer(serializers.ModelSerializer):

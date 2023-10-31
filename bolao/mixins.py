@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 
+
 class ListCreateDetailOnlyMixin:
     def update(self, request, *args, **kwargs):
         return Response({'detail': 'Atualização não permitida.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)

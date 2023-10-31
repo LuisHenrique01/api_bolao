@@ -176,7 +176,7 @@ class Carteira(BaseModel):
                 obj_conta, _ = ContaExternaUsuario.objects.get_or_create(**conta, defaults={'carteira': self})
                 asaas_infos = AsaasInformations.objects.create(asaas_id=response['id'], op_type=response['object'],
                                                                value=response['value'], net_value=response['netValue'])
-                HistoricoTransacao.objects.create(carteira=self,valor=-valor, externo=True, conta=obj_conta,
+                HistoricoTransacao.objects.create(carteira=self, valor=-valor, externo=True, conta=obj_conta,
                                                   tipo=HistoricoTransacao.get_type(valor=-valor, externo=True),
                                                   status=STATUS_HISTORICO['PENDING'],
                                                   asaas_infos=asaas_infos)

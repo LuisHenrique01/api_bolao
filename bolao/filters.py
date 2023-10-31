@@ -1,7 +1,7 @@
 from django_filters import rest_framework as filters
-from bolao import STATUS_BOLAO
 
 from bolao.models import Bolao
+
 
 class BolaoFilter(filters.FilterSet):
     taxa_banca__gte = filters.NumberFilter(field_name="taxa_banca", lookup_expr="gte")

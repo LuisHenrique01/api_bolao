@@ -1,7 +1,6 @@
 import os
 from decimal import Decimal
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -33,7 +32,7 @@ class PaymentsWebhook(WebhookActionMixin, APIView):
             valor = Decimal(self.request.data['payment']['value']) - Decimal(self.request.data['payment']['netValue'])
             carteira_banca.saque(valor=valor, externo=True, is_webhook=True)
             HistoricoTransacao.objects.create(status=STATUS_HISTORICO['CONFIRMED'], carteira=carteira_banca,
-                                              valor=valor, externo=True, 
+                                              valor=valor, externo=True,
                                               tipo=HistoricoTransacao.get_type(valor=-valor, externo=True),
                                               asaas_infos=transacao.asaas_infos)
         except ObjectDoesNotExist:
@@ -81,4 +80,3 @@ class TransfersWebhook(WebhookActionMixin, APIView):
         transacao.status = STATUS_HISTORICO['CONFIRMED']
         transacao.save()
         return status.HTTP_200_OK
-

@@ -67,6 +67,6 @@ class HistoricoTransacao(BaseModel):
             return 'COMPRA'
         else:
             return 'GANHO'
-    
+
     def __str__(self) -> str:
         return f'{self.tipo} - {self.status} => {self.valor}'
