@@ -65,3 +65,9 @@ Assim, é possível perceber que o mercado de apostas esportivas é bastante amp
     ```bash
     python manage.py runserver
     ```
+
+### Para renovar o certificado SSL
+
+Parar os serviços ativos (Só o nginx já funciona):
+docker-compose -f docker-compose.prod.yml stop
+certbot certonly --standalone -d starbet.space
