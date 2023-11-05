@@ -39,7 +39,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
-    command: celery -A api_bolao worker -l info
+    command: "celery -A api_bolao worker -l info"
     volumes:
       - .:/code
     env_file: ./.env
@@ -51,7 +51,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
-    command: celery -A api_bolao beat -l info
+    command: "celery -A api_bolao beat -l info"
     volumes:
       - .:/code
     env_file: ./.env
@@ -64,7 +64,7 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     command: >
-      sh -c "celery -A api_bolao flower --basic_auth=$FLOWER_USER:$FLOWER_PASSWORD"
+      "celery -A api_bolao flower --basic_auth=$FLOWER_USER:$FLOWER_PASSWORD"
     ports:
       - 5555:5555
     env_file: ./.env
