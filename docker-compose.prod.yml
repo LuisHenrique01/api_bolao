@@ -38,6 +38,7 @@ services:
   celery_worker:
     build:
       context: .
+      dockerfile: Dockerfile.prod
     command: celery -A api_bolao worker -l info
     volumes:
       - .:/code
@@ -49,6 +50,7 @@ services:
   celery_beat:
     build:
       context: .
+      dockerfile: Dockerfile.prod
     command: celery -A api_bolao beat -l info
     volumes:
       - .:/code
@@ -60,6 +62,7 @@ services:
   flower:
     build:
       context: .
+      dockerfile: Dockerfile.prod
     command: >
       sh -c "celery -A api_bolao flower --basic_auth=$FLOWER_USER:$FLOWER_PASSWORD"
     ports:
@@ -69,13 +72,6 @@ services:
       - redis
       - celery_worker
       - celery_beat
-
-  certbot:
-    image: certbot/certbot
-    command: sh -c "certbot certonly --webroot --webroot-path /var/www/html --email monitoringamazon@gmail.com --agree-tos -d starbet.space"
-    volumes:
-      - /var/www/html:/var/www/html
-    entrypoint: ""
 
   nginx:
     image: nginx:latest
