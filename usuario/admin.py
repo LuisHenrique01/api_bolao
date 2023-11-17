@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 
-from .models import PermissoesNotificacao, Endereco, Usuario, HistoricoTransacao
+from .models import Carteira, PermissoesNotificacao, Endereco, Usuario, HistoricoTransacao, AsaasInformations
 
 admin.site.register(PermissoesNotificacao)
 admin.site.register(Endereco)
@@ -9,7 +9,7 @@ admin.site.register(Endereco)
 
 @admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):
-    fields = ['nome', 'email',   'telefone', 'is_active', 'permissoes', 'endereco']
+    fields = ['nome', 'email', 'telefone', 'is_active', 'permissoes', 'endereco']
     fieldsets = None
     list_display = ['nome_formatado', 'email', 'cpf_marcarado', 'telefone_formatado',
                     'saldo', 'permissoes', 'bloqueado']
@@ -50,8 +50,19 @@ class UsuarioAdmin(UserAdmin):
 
 @admin.register(HistoricoTransacao)
 class HistoricoTransacaoAdmin(admin.ModelAdmin):
-
     fields = ['tipo', 'valor', 'carteira', 'externo', 'pix']
     ordering = ['created_at']
     list_filter = ['tipo', 'externo']
     search_fields = ['valor', 'carteira']
+
+
+@admin.register(Carteira)
+class CarteiraAdmin(admin.ModelAdmin):
+    fields = ['saldo', 'bloqueado', 'asaas_customer']
+    list_display = ['saldo', 'bloqueado', 'asaas_customer']
+
+
+@admin.register(AsaasInformations)
+class AsaasInformationsAdmin(admin.ModelAdmin):
+    fields = ['asaas_id', 'op_type', 'due_date', 'value', 'net_value', 'invoice_url', 'billet_url']
+    list_display = ['asaas_id', 'op_type', 'due_date', 'value', 'net_value', 'invoice_url', 'billet_url']
