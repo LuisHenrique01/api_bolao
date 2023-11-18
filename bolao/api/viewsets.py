@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
@@ -98,6 +99,7 @@ class BilheteViewSet(ListCreateDetailOnlyMixin, ModelViewSet):
     def get_queryset(self):
         return self.queryset.filter(usuario=self.request.user)
 
+    @transaction.atomic
     def create(self, request):
         try:
             bilhete_serializer = BilheteCriarSerializer(data={'bolao': request.data['bolao'],
