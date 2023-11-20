@@ -78,6 +78,10 @@ class BolaoViewSet(ModelViewSet):
     @action(detail=False, methods=['GET'], url_path='meus-boloes')
     def meus_boloes(self, request):
         queryset = self.queryset.filter(criador=request.user)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = BolaoSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

@@ -132,12 +132,12 @@ class PalpiteCriarSerializer(serializers.ModelSerializer):
     def validate_placar_casa(self, value):
         if value >= 0:
             return value
-        raise serializers.ValidationError('O placar do time casa deve ser maior que 0.')
+        raise serializers.ValidationError('O placar do time casa deve ser maior ou igual a 0.')
 
     def validate_placar_fora(self, value):
         if value >= 0:
             return value
-        raise serializers.ValidationError('O placar do time fora deve ser maior que 0.')
+        raise serializers.ValidationError('O placar do time fora deve ser maior ou igual a 0.')
 
 
 class BilheteCriarSerializer(serializers.ModelSerializer):
