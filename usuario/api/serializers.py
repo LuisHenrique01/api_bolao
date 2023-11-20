@@ -122,7 +122,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
         fields = ['id', 'email', 'cpf_marcarado', 'nome', 'nome_formatado', 'password', 'data_nascimento', 'telefone',
                   'endereco', 'permissoes', 'carteira']
         read_only_fields = ['id', 'cpf_marcarado', 'data_nascimento', 'nome_formatado']
-        extra_kwargs = {'password': {'write_only': True}}
+        extra_kwargs = {'password': {'write_only': True}, 'nome': {'write_only': True}}
 
     def update(self, instance, validated_data):
         if endereco := validated_data.get('endereco'):
