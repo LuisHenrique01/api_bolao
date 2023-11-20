@@ -119,9 +119,9 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
-        fields = ['id', 'email', 'cpf', 'nome', 'password', 'data_nascimento', 'telefone',
+        fields = ['id', 'email', 'cpf_marcarado', 'nome', 'password', 'data_nascimento', 'telefone',
                   'endereco', 'permissoes', 'carteira']
-        read_only_fields = ['id', 'cpf', 'data_nascimento']
+        read_only_fields = ['id', 'cpf_marcarado', 'data_nascimento']
         extra_kwargs = {'password': {'write_only': True}}
 
     def update(self, instance, validated_data):
