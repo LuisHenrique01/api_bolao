@@ -106,15 +106,19 @@ class BilheteSerializer(serializers.ModelSerializer):
 
     palpites = PalpiteSerializer(many=True)
     codigo_bolao = serializers.SerializerMethodField()
+    status_bolao = serializers.SerializerMethodField()
 
     class Meta:
         model = Bilhete
-        fields = ['usuario', 'bolao', 'palpites', 'acertou', 'codigo_bolao', 'status']
+        fields = ['usuario', 'bolao', 'palpites', 'acertou', 'codigo_bolao', 'status_bolao']
         read_only_fields = ['acertou']
         extra_kwargs = {'usuario': {'write_only': True}, 'bolao': {'write_only': True}}
 
     def get_codigo_bolao(self, obj):
         return obj.bolao.codigo
+
+    def get_status_bolao(self, obj):
+        return obj.bolao.status
 
 
 class PalpiteCriarSerializer(serializers.ModelSerializer):
