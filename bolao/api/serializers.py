@@ -127,7 +127,7 @@ class BilheteSerializer(serializers.ModelSerializer):
         taxa = Decimal(round((100 - (obj.bolao.taxa_banca + obj.bolao.taxa_criador)) / 100, 2))
         return total * taxa
 
-    def get_status_bolao(self, obj):
+    def get_mini_id(self, obj):
         return str(obj.id)[-8:]
 
 
