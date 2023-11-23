@@ -107,10 +107,12 @@ class BilheteSerializer(serializers.ModelSerializer):
     palpites = PalpiteSerializer(many=True)
     codigo_bolao = serializers.SerializerMethodField()
     status_bolao = serializers.SerializerMethodField()
+    posivel_retorno = serializers.SerializerMethodField()
+    mini_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Bilhete
-        fields = ['usuario', 'bolao', 'palpites', 'acertou', 'codigo_bolao', 'status_bolao']
+        fields = ['usuario', 'bolao', 'palpites', 'acertou', 'codigo_bolao', 'status_bolao', 'posivel_retorno', 'mini_id']
         read_only_fields = ['acertou']
         extra_kwargs = {'usuario': {'write_only': True}, 'bolao': {'write_only': True}}
 
@@ -119,6 +121,14 @@ class BilheteSerializer(serializers.ModelSerializer):
 
     def get_status_bolao(self, obj):
         return obj.bolao.status
+
+    def get_posivel_retorno(self, obj):
+        total = obj.bolao.bilhetes.count() * obj.bolao.valor_palpite
+        taxa = Decimal(round((100 - (obj.bolao.taxa_banca + obj.bolao.taxa_criador)) / 100, 2))
+        return total * taxa
+
+    def get_status_bolao(self, obj):
+        return str(obj.id)[-8:]
 
 
 class PalpiteCriarSerializer(serializers.ModelSerializer):
