@@ -109,7 +109,7 @@ class BilheteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bilhete
-        fields = ['usuario', 'bolao', 'palpites', 'acertou', 'codigo_bolao']
+        fields = ['usuario', 'bolao', 'palpites', 'acertou', 'codigo_bolao', 'status']
         read_only_fields = ['acertou']
         extra_kwargs = {'usuario': {'write_only': True}, 'bolao': {'write_only': True}}
 
