@@ -140,7 +140,7 @@ class Bolao(BaseModel):
 
     @transaction.atomic
     def cancelar_bolao(self):
-        for bilhete in self.self.bilhetes.all():
+        for bilhete in self.bilhetes.all():
             bilhete.usuario.carteira.depositar(self.valor_palpite)
         self.status = STATUS_BOLAO['CANCELADO']
         self.save()
