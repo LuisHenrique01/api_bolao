@@ -60,7 +60,7 @@ class API:
                     temporada_atual=temporada_atual
                 ))
 
-            Campeonato.objects.bulk_create(campeonatos, update_conflicts=True,
+            Campeonato.objects.bulk_create(campeonatos,
                                            update_fields=['temporada_atual', 'logo'],
                                            unique_fields=['id_externo'])
             return True
